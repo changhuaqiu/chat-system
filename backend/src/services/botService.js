@@ -20,7 +20,7 @@ export class BotService {
    */
   async onMessageCreated(event) {
     const { source, target, payload, metadata } = event;
-    const { roomId, content, sender, mentions } = payload;
+    const { roomId, content, sender, mentions, id: messageId } = payload;
 
     // Ignore messages sent by bots (to prevent loops, unless we implement specific A2A logic later)
     // Actually, we DO want A2A. But we need to be careful.
@@ -93,15 +93,29 @@ export class BotService {
         }
 
         if (shouldTrigger) {
-            // Replaced direct trigger with queueing
-            this.enqueueBot(bot, roomId, content, event.id, (metadata?.depth || 0) + 1);
+            // Pass the actual message ID for proper reply threading
+            this.enqueueBot(bot, roomId, content, messageId, (metadata?.depth || 0) + 1);
         }
     }
   }
 
   enqueueBot(bot, roomId, content, replyToEventId, depth = 0) {
     console.log(`[BotService] Queueing bot ${bot.id} (Queue size: ${this.queue.length})`);
-    this.queue.push({ bot, roomId, content, replyToEventId, depth });
+    // Create a snapshot of bot properties to avoid reference issues
+    this.queue.push({
+      bot: {
+        id: bot.id,
+        name: bot.name,
+        avatar: bot.avatar,
+        color: bot.color,
+        config: bot.config,
+        provider_type: bot.provider_type
+      },
+      roomId,
+      content,
+      replyToEventId,
+      depth
+    });
     this.processQueue();
   }
 
@@ -151,17 +165,41 @@ export class BotService {
 
     // 2. Execute Runtime
     const config = bot.config ? JSON.parse(bot.config) : {};
-    
+
     // Check if Python Worker is needed (URN routing)
     // If bot.provider_type is 'webhook', BotRuntime handles it via WebhookAdaptor
-    
+
     try {
-        // We need conversation history. For now, just current message.
-        // TODO: Fetch history from DB or EventStore
-        const history = [{ role: 'user', content }];
+        // Fetch conversation history from DB (last 20 messages)
+        const history = await new Promise((resolve, reject) => {
+            db.all(
+                `SELECT sender, content, message_type, media_url, timestamp FROM messages
+                 WHERE room_id = ? AND is_deleted = 0
+                 ORDER BY timestamp DESC
+                 LIMIT 20`,
+                [roomId],
+                (err, rows) => {
+                    if (err) reject(err);
+                    else {
+                        // Reverse to get chronological order and format for LLM
+                        const formattedHistory = rows.reverse().map(msg => ({
+                            role: msg.sender === 'user' ? 'user' : 'assistant',
+                            content: msg.message_type === 'image' ? `[Image: ${msg.media_url}]` : msg.content
+                        }));
+                        resolve(formattedHistory);
+                    }
+                }
+            );
+        });
+
+        // If no history, use current message
+        if (history.length === 0) {
+            history.push({ role: 'user', content });
+        }
 
         const result = await botRuntime.generateResponse(bot.id, history, bot.provider_type, config, {
-            roomId
+            roomId,
+            replyTo: replyToEventId // Pass reply context for proper threading
         });
 
         if (result.success) {
@@ -172,7 +210,7 @@ export class BotService {
                 content: result.content,
                 messageType: 'text', // or result.messageType
                 timestamp: result.timestamp,
-                replyToId: null, // We could link to replyToEventId if we map it to DB ID
+                replyToId: replyToEventId, // Link to the event ID we're replying to
                 mentions: [], // Parse mentions from content?
                 metadata: {
                     latency_ms: result.metrics?.latency,
@@ -192,6 +230,9 @@ export class BotService {
 
             // 4. Update Stats
             this.updateBotStats(bot.id, 1, 0, result.metrics?.latency || 0);
+            console.log(`[BotService] Bot ${bot.id} replied successfully`);
+        } else {
+            console.error(`[BotService] Bot ${bot.id} failed to generate response:`, result.error);
         }
     } catch (error) {
         console.error(`[BotService] Error triggering bot ${bot.id}:`, error);
