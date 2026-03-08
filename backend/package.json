@@ -1,0 +1,35 @@
+{
+  "name": "chat-system-backend",
+  "version": "1.0.0",
+  "description": "Multi-bot chat system backend with WebSocket support",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "chat",
+    "websocket",
+    "bot",
+    "llm"
+  ],
+  "author": "fullstack-dev",
+  "license": "MIT",
+  "dependencies": {
+    "@ai-sdk/openai": "^0.0.59",
+    "@fastify/cors": "^8.5.0",
+    "@fastify/static": "^7.0.4",
+    "axios": "^1.13.6",
+    "dotenv": "^16.4.5",
+    "fastify": "^4.26.2",
+    "js-yaml": "^4.1.1",
+    "socket.io": "^4.8.1",
+    "sqlite3": "^5.1.7",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

@@ -1,0 +1,67 @@
+services:
+  one-api:
+    image: justsong/one-api:latest
+    container_name: openclaw-one-api
+    restart: always
+    ports:
+      - "3002:3000"
+    volumes:
+      - ./data/one-api:/data
+    environment:
+      - TZ=Asia/Shanghai
+      # Default root token is '123456' if not set, but better to rely on UI or initial setup.
+      # We can set a specific root token for automation if One API supports it via env,
+      # but standard way is to get it from UI or logs.
+      # For dev simplicity, we'll assume default or user sets it.
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+#  backend:
+#    build: 
+#      context: ./backend
+#      dockerfile: Dockerfile
+#    container_name: openclaw-backend
+#    restart: always
+#    ports:
+#      - "3001:3001"
+#    environment:
+#      - PORT=3001
+#      - ONE_API_BASE_URL=http://one-api:3000
+#      # You need to set this after getting it from One API
+#      - ONE_API_ROOT_TOKEN=
+#    depends_on:
+#      - one-api
+#    volumes:
+#      - ./backend:/app
+#      - /app/node_modules
+#
+#  frontend:
+#    build:
+#      context: ./frontend
+#      dockerfile: Dockerfile
+#    container_name: openclaw-frontend
+#    restart: always
+#    ports:
+#      - "5173:5173"
+#    environment:
+#      - VITE_API_BASE_URL=http://localhost:3001
+#    depends_on:
+#      - backend
+#    volumes:
+#      - ./frontend:/app
+#      - /app/node_modules
+#
+## For Python Worker if needed
+#  python-worker:
+#    build:
+#      context: ./python-worker
+#      dockerfile: Dockerfile
+#    container_name: openclaw-python-worker
+#    restart: always
+#    depends_on:
+#      - backend
+#    volumes:
+#      - ./python-worker:/app

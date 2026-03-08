@@ -1,0 +1,148 @@
+import Fastify from 'fastify';
+import cors from '@fastify/cors';
+import dotenv from 'dotenv';
+import { Server } from 'socket.io';
+import { botsRoutes } from './routes/bots.js';
+import { apiKeysRoutes } from './routes/apiKeys.js';
+import logsRoutes from './routes/logs.js';
+import { agentsRoutes } from './routes/agents.js';
+import { roomsRoutes } from './routes/rooms.js';
+import { emojiRoutes } from './routes/emoji.js';
+import sqlite3 from 'sqlite3';
+import agentService from "./services/agentService.js";
+
+dotenv.config();
+
+const fastify = Fastify({ logger: false });
+const db = new sqlite3.Database('chat.db');
+
+fastify.decorate('db', db);
+
+db.serialize(() => {
+  db.run(`CREATE TABLE IF NOT EXISTS bots (
+    id TEXT PRIMARY KEY, name TEXT NOT NULL, model TEXT NOT NULL,
+    api_key TEXT, status TEXT DEFAULT 'offline',
+    last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS messages (
+    id TEXT PRIMARY KEY, room_id TEXT NOT NULL, sender TEXT NOT NULL,
+    content TEXT NOT NULL, mentions TEXT, message_type TEXT DEFAULT 'text',
+    media_url TEXT, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS rooms (
+    id TEXT PRIMARY KEY, name TEXT NOT NULL, description TEXT,
+    type TEXT DEFAULT 'free', created_by TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS api_keys (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT UNIQUE NOT NULL,
+    name TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_used TIMESTAMP
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS agent_mappings (
+    id TEXT PRIMARY KEY, agent_id TEXT NOT NULL UNIQUE,
+    display_name TEXT NOT NULL, avatar TEXT, description TEXT,
+    status TEXT DEFAULT 'offline', last_active TIMESTAMP
+  )`);
+});
+
+fastify.register(cors, { origin: "*" });
+fastify.register(botsRoutes);
+fastify.register(apiKeysRoutes);
+fastify.register(agentsRoutes);
+fastify.register(roomsRoutes);
+fastify.register(logsRoutes);
+
+agentService.initialize().then(() => {
+  console.log("Agent service initialized successfully");
+}).catch((err) => {
+  console.error("Failed to initialize agent service:", err);
+});
+
+fastify.get('/', () => ({ message: 'Chat System API', version: '1.0.0' }));
+fastify.get('/health', () => ({ status: 'ok' }));
+
+const PORT = process.env.PORT || 3000;
+
+const start = async () => {
+  try {
+    await fastify.listen({ port: PORT, host: '0.0.0.0' });
+    console.log(`Server listening on http://localhost:${PORT}`);
+    
+    // Create Socket.io server
+    const io = new Server(fastify.server, {
+      cors: { origin: "*", methods: ["GET", "POST"] }
+    });
+
+    io.on('connection', (socket) => {
+      console.log(`Client connected: ${socket.id}`);
+      
+      socket.on('joinRoom', ({ room }) => {
+        socket.join(room);
+        console.log(`Client ${socket.id} joined room: ${room}`);
+      });
+      
+      socket.on('sendMessage', (data) => {
+        const { room, sender, content, mentions = [] } = data;
+        const messageId = Date.now().toString();
+        const timestamp = new Date().toISOString();
+        
+        db.run(
+          'INSERT INTO messages (id, room_id, sender, content, mentions, message_type, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [messageId, room, sender, content, JSON.stringify(mentions), 'text', timestamp],
+          (err) => {
+            if (err) {
+              console.error('Error saving message:', err);
+              return;
+            }
+            io.to(room).emit('messageReceived', {
+              id: messageId, roomId: room, sender, content, mentions,
+              messageType: 'text', timestamp
+            });
+            
+            if (mentions && mentions.length > 0) {
+              for (const agentId of mentions) {
+                if (agentId !== sender) {
+                  agentService.sendMessage(agentId, content);
+                  setTimeout(() => {
+                    const agentResponse = {
+                      id: Date.now().toString(),
+                      roomId: room,
+                      sender: agentId,
+                      content: `[@${sender}] 收到你的消息了`,
+                      timestamp: new Date().toISOString()
+                    };
+                    db.run(
+                      'INSERT INTO messages (id, room_id, sender, content, message_type, timestamp) VALUES (?, ?, ?, ?, ?, ?)',
+                      [agentResponse.id, room, agentId, agentResponse.content, 'text', agentResponse.timestamp],
+                      () => io.to(room).emit('messageReceived', agentResponse)
+                    );
+                  }, 1000);
+                }
+              }
+            }
+          }
+        );
+      });
+      
+      socket.on('disconnect', () => {
+        console.log(`Client disconnected: ${socket.id}`);
+      });
+    });
+
+    console.log(`WebSocket server ready on ws://localhost:${PORT}`);
+    
+    // Store io and db on fastify for routes access AFTER listen
+    fastify.io = io;
+    
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+start();

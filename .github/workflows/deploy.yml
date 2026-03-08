@@ -1,0 +1,73 @@
+name: Deploy to ECS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # 支持手动触发
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: ${{ secrets.API_BASE_URL }}
+
+      - name: Deploy to ECS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.ECS_HOST }}
+          username: ${{ secrets.ECS_USER }}
+          key: ${{ secrets.ECS_SSH_KEY }}
+          port: 22
+          script: |
+            cd /opt/chat-system
+            
+            # 拉取最新代码
+            git pull origin main
+            
+            # 安装后端依赖
+            cd backend
+            npm install --production
+            
+            # 复制前端构建产物
+            cd ../frontend
+            npm ci
+            npm run build
+            rm -rf /var/www/chat-system/*
+            cp -r dist/* /var/www/chat-system/
+            
+            # 重启后端
+            cd ../backend
+            pm2 restart chat-backend || pm2 start src/server.js --name chat-backend
+            pm2 save
+
+      - name: Health check
+        run: |
+          sleep 10
+          curl -f ${{ secrets.ECS_HOST }}:80/api/health || exit 1
+
+      - name: Notify on success
+        if: success()
+        run: echo "✅ 部署成功！"
+
+      - name: Notify on failure
+        if: failure()
+        run: echo "❌ 部署失败，请检查日志"

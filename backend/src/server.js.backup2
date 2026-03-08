@@ -1,0 +1,232 @@
+import Fastify from 'fastify';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { Server } from 'socket.io';
+import { botsRoutes } from './routes/bots.js';
+import { apiKeysRoutes } from './routes/apiKeys.js';
+import sqlite3 from 'sqlite3';
+
+// Environment
+dotenv.config();
+
+// Initialize Fastify
+const fastify = Fastify({
+  logger: true
+});
+
+// Middleware
+fastify.register(cors);
+
+// Register routes
+fastify.register(botsRoutes);
+fastify.register(apiKeysRoutes);
+
+// Initialize services on server start - use dynamic import for sqlite3
+const db = new sqlite3.Database('chat.db');
+
+// Create tables
+db.run(`
+  CREATE TABLE IF NOT EXISTS bots (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    model TEXT NOT NULL,
+    api_key TEXT,
+    status TEXT DEFAULT 'offline',
+    last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+db.run(`
+  CREATE TABLE IF NOT EXISTS messages (
+    id TEXT PRIMARY KEY,
+    room_id TEXT NOT NULL,
+    sender TEXT NOT NULL,
+    content TEXT NOT NULL,
+    mentions TEXT,
+    message_type TEXT DEFAULT 'text',
+    media_url TEXT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+db.run(`
+  CREATE TABLE IF NOT EXISTS api_keys (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    key TEXT UNIQUE NOT NULL,
+    name TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_used TIMESTAMP
+  )
+`);
+
+// Setup services after db is ready
+const fastifyWithDb = fastify;
+fastifyWithDb.db = db;
+
+// API Routes
+fastify.get('/', (request, reply) => {
+  console.log('Root route called');
+  reply.send({ 
+    message: 'Chat System API',
+    version: '1.0.0',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Health check
+fastify.get('/health', (request, reply) => {
+  console.log('Health check called');
+  reply.send({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Start server
+const PORT = process.env.PORT || 3000;
+
+try {
+  // Start server with WebSocket support
+  fastify.listen({ port: PORT, host: '0.0.0.0' })
+    .then(async (address) => {
+      console.log(`Server listening on ${address}`);
+      
+      // Initialize WebSocket after server starts
+      const io = new Server(fastify.server, {
+        cors: {
+          origin: "*",
+          methods: ["GET", "POST"]
+        }
+      });
+      
+      // Socket.IO connection handling
+      io.on('connection', (socket) => {
+        console.log(`Client connected: ${socket.id}`);
+        
+        // Join room
+        socket.on('joinRoom', (roomId) => {
+          socket.join(roomId);
+          console.log(`Client ${socket.id} joined room: ${roomId}`);
+        });
+        
+        // Send message
+        socket.on('sendMessage', (data) => {
+          const { roomId, sender, content, mentions = [], messageType = 'text', mediaUrl = null } = data;
+          
+          // Insert message
+          db.run(
+            'INSERT INTO messages (id, room_id, sender, content, mentions, message_type, media_url, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [
+              Date.now().toString(),
+              roomId,
+              sender,
+              content,
+              JSON.stringify(mentions),
+              messageType,
+              mediaUrl,
+              new Date().toISOString()
+            ],
+            (err) => {
+              if (err) {
+                console.error('Error saving message:', err);
+                socket.emit('error', { message: err.message });
+                return;
+              }
+              
+              // Prepare message object
+              const message = {
+                id: Date.now().toString(),
+                roomId,
+                sender,
+                content,
+                mentions,
+                messageType,
+                mediaUrl,
+                timestamp: new Date().toISOString()
+              };
+              
+              // Emit to room
+              io.to(roomId).emit('messageReceived', message);
+              
+              // Trigger bot responses for mentions (simulated)
+              if (mentions && mentions.length > 0) {
+                for (const botId of mentions) {
+                  if (botId !== sender) {
+                    setTimeout(() => {
+                      io.to(roomId).emit('botResponse', {
+                        sender: botId,
+                        roomId,
+                        replyTo: message.id,
+                        content: `Hello from ${botId}!`
+                      });
+                    }, 1000);
+                  }
+                }
+              }
+            }
+          );
+        });
+        
+        // Bot registration
+        socket.on('registerBot', (botData) => {
+          const { botId, name, model, apiKey } = botData;
+          
+          // Upsert bot (update or insert)
+          db.all('SELECT * FROM bots WHERE id = ?', [botId], (err, row) => {
+            if (err) {
+              socket.emit('error', { message: err.message });
+              return;
+            }
+            
+            if (row) {
+              // Update existing
+              db.run(
+                'UPDATE bots SET name = ?, model = ?, api_key = ?, status = ?, last_active = CURRENT_TIMESTAMP WHERE id = ?',
+                [name, model, apiKey, 'online', botId],
+                (err) => {
+                  if (err) {
+                    socket.emit('error', { message: err.message });
+                  } else {
+                    socket.emit('botRegistered', { success: true, botId });
+                  }
+                }
+              );
+            } else {
+              // Insert new
+              db.run(
+                'INSERT INTO bots (id, name, model, api_key, status) VALUES (?, ?, ?, ?, ?)',
+                [botId, name, model, apiKey, 'online'],
+                function(err) {
+                  if (err) {
+                    socket.emit('error', { message: err.message });
+                  } else {
+                    socket.emit('botRegistered', { success: true, botId });
+                  }
+                }
+              );
+            }
+          });
+        });
+        
+        // disconnect
+        socket.on('disconnect', () => {
+          console.log(`Client disconnected: ${socket.id}`);
+        });
+      });
+      
+      // Log database status
+      db.all('SELECT name FROM sqlite_master WHERE type="table"', (err, rows) => {
+        if (!err) {
+          console.log(`Database initialized. Tables: ${rows.map(r => r.name).join(', ')}`);
+        } else {
+          console.error('Database check error:', err);
+        }
+      });
+      
+    })
+    .catch(err => {
+      console.error('Failed to start server:', err);
+      process.exit(1);
+    });
+  
+} catch (error) {
+  console.error('Failed to start server:', error);
+  process.exit(1);
+}
