@@ -165,9 +165,10 @@ export class YAMLLoader {
     const content = this.toYamlMarkdown(card);
 
     return new Promise((resolve, reject) => {
+      // Use INSERT OR REPLACE to handle both create and update cases
       db.run(
-        'UPDATE bots SET character_card = ? WHERE id = ?',
-        [content, botId],
+        'INSERT OR REPLACE INTO bots (id, name, character_card) VALUES (?, ?, ?)',
+        [botId, card.name || botId, content],
         (err) => {
           if (err) {
             reject(err);

@@ -8,6 +8,7 @@ import LogPage from './pages/LogPage'
 import RobotManagePage from './pages/RobotManagePage'
 import ApiKeysPage from './pages/ApiKeysPage'
 import CreateChatroomPage from './pages/CreateChatroomPage'
+import CharacterCardEditor from './pages/CharacterCardEditor'
 import Layout from './components/Layout'
 import './index.css'
 
@@ -28,6 +29,7 @@ const App = () => {
         <Route path="/robots" element={<Layout><RobotManagePage /></Layout>} />
         <Route path="/api-keys" element={<Layout><ApiKeysPage /></Layout>} />
         <Route path="/create-chatroom" element={<Layout><CreateChatroomPage /></Layout>} />
+        <Route path="/character-cards/:botId" element={<Layout><CharacterCardEditor /></Layout>} />
       </Routes>
     </BrowserRouter>
   )

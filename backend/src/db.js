@@ -95,6 +95,8 @@ export const initDb = () => {
     safeAddColumn('bots', 'capabilities TEXT');
     safeAddColumn('bots', 'color TEXT');
     safeAddColumn('bots', 'character_card TEXT');
+    safeAddColumn('bots', 'created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
+    safeAddColumn('bots', 'updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
     
     // Events table migrations
     safeAddColumn('events', 'type TEXT');

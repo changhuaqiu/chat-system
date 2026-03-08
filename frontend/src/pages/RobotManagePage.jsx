@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
 
 const PROVIDER_CONFIG = {
@@ -58,6 +59,7 @@ const PROVIDER_CONFIG = {
 };
 
 const RobotManagePage = () => {
+  const navigate = useNavigate();
   const [robots, setRobots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -474,12 +476,18 @@ const RobotManagePage = () => {
         </div>
       </div>
 
-      <div className="mt-4 pt-4 border-t border-[#f5f5f7] grid grid-cols-2 gap-2">
+      <div className="mt-4 pt-4 border-t border-[#f5f5f7] grid grid-cols-3 gap-2">
         <button
           onClick={() => openEditModal(robot)}
           className="px-3 py-2 bg-white border border-[#d2d2d7] rounded-lg text-xs font-medium text-[#1d1d1f] hover:bg-[#f5f5f7] transition-colors"
         >
           配置
+        </button>
+        <button
+          onClick={() => navigate(`/character-cards/${robot.id}`)}
+          className="px-3 py-2 bg-white border border-purple-200 rounded-lg text-xs font-medium text-purple-600 hover:bg-purple-50 transition-colors"
+        >
+          🎭 角色卡
         </button>
         <button
           onClick={() => openDeleteConfirm(robot)}

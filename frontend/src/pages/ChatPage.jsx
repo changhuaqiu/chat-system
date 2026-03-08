@@ -7,6 +7,7 @@ import ChatSidebar from '../components/Chat/ChatSidebar';
 import ChatArea from '../components/Chat/ChatArea';
 import MemberSidebar from '../components/Chat/MemberSidebar';
 import InviteModal from '../components/Chat/InviteModal';
+import WorldInfoManager from '../components/WorldInfo/WorldInfoManager';
 
 function ChatPage() {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ function ChatPage() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showWorldInfoModal, setShowWorldInfoModal] = useState(false);
   const [typingUsers, setTypingUsers] = useState([]);
   const [typingAgents, setTypingAgents] = useState([]); // Detailed typing agent info
   const [replyingTo, setReplyingTo] = useState(null);
@@ -300,6 +302,7 @@ function ChatPage() {
                 robots={agentList} // All agents are "available robots" to add/mention
                 onInvite={() => setShowInviteModal(true)}
                 onAddRobot={handleAddRobot}
+                onManageWorldInfo={() => setShowWorldInfoModal(true)}
             />
 
             {/* Modals */}
@@ -307,6 +310,10 @@ function ChatPage() {
                 isOpen={showInviteModal}
                 onClose={() => setShowInviteModal(false)}
                 roomId={roomId}
+            />
+            <WorldInfoManager
+                isOpen={showWorldInfoModal}
+                onClose={() => setShowWorldInfoModal(false)}
             />
         </div>
     </Layout>
