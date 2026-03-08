@@ -1,6 +1,14 @@
 import sqlite3 from 'sqlite3';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-export const db = new sqlite3.Database('chat.db');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Database path: backend/data/chat.db
+const dbPath = path.join(__dirname, '..', 'data', 'chat.db');
+
+export const db = new sqlite3.Database(dbPath);
 
 export const initDb = () => {
   db.serialize(() => {
