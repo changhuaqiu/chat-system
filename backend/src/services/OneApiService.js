@@ -79,15 +79,31 @@ class OneApiService {
   async checkHealth() {
     try {
       const res = await this.client.get('/api/status');
-      // Check if token is valid by testing a protected endpoint
-      const tokenRes = await this.client.get('/api/token');
+      // Only check if status endpoint is reachable (no auth required)
+      // Token validation is optional since session cookies may expire
+      if (res.data && res.data.success !== false) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error('[OneApiService] Health check failed:', e.message);
+      return false;
+    }
+  }
+
+  /**
+   * Check if root token is valid (separate from health check)
+   */
+  async validateToken() {
+    try {
+      const tokenRes = await this.client.get('/api/token/');
       if (tokenRes.data && tokenRes.data.success === false) {
         console.error('[OneApiService] Root Token is invalid:', tokenRes.data.message);
         return false;
       }
       return true;
     } catch (e) {
-      console.error('[OneApiService] Health check failed:', e.message);
+      console.error('[OneApiService] Token validation failed:', e.message);
       return false;
     }
   }

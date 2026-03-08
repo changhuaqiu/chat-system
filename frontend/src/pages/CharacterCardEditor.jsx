@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
-import Layout from '../components/Layout';
 
 const CharacterCardEditor = () => {
   const { botId } = useParams();
@@ -206,16 +205,14 @@ const CharacterCardEditor = () => {
 
   if (loading) {
     return (
-      <Layout>
-        <div className="flex items-center justify-center h-full">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-        </div>
-      </Layout>
+      <div className="flex-1 flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
     );
   }
 
   return (
-    <Layout>
+    <div className="flex-1 flex flex-col overflow-hidden">
       <div className="flex-1 overflow-y-auto bg-gray-50 p-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -709,7 +706,7 @@ const CharacterCardEditor = () => {
           </div>
         </div>
       )}
-    </Layout>
+    </div>
   );
 };
 
