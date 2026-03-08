@@ -17,7 +17,7 @@
 10. [优化建议](./10-optimization-plan.md)
 11. [多机器人协作分析与建议](./11-multi-agent-collaboration.md)
 12. [上下文管理方案](./12-context-management.md)
-13. **[A2A 路由机制设计](./13-a2a-routing.md)** ⭐ 新增
+13. **[角色卡保存失败问题分析](./13-character-card-save-issue.md)** ⭐ 新增
 
 ## 快速概览
 
