@@ -165,18 +165,35 @@ export class YAMLLoader {
     const content = this.toYamlMarkdown(card);
 
     return new Promise((resolve, reject) => {
-      // Use UPDATE to only modify character_card and name, preserving other fields
-      db.run(
-        'UPDATE bots SET character_card = ?, name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-        [content, card.name || botId, botId],
-        (err) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve();
+      // First check if bot exists
+      db.get('SELECT id FROM bots WHERE id = ?', [botId], (err, row) => {
+        if (err) {
+          reject(err);
+          return;
         }
-      );
+
+        if (!row) {
+          // Bot doesn't exist, create it with INSERT
+          db.run(
+            'INSERT INTO bots (id, name, character_card, created_at, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)',
+            [botId, card.name || botId, content],
+            (err) => {
+              if (err) reject(err);
+              else resolve();
+            }
+          );
+        } else {
+          // Bot exists, update it
+          db.run(
+            'UPDATE bots SET character_card = ?, name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            [content, card.name || botId, botId],
+            (err) => {
+              if (err) reject(err);
+              else resolve();
+            }
+          );
+        }
+      });
     });
   }
 
