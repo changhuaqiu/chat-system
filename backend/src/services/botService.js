@@ -204,7 +204,9 @@ export class BotService {
 
         if (result.success) {
             // 3. Publish Response Event
+            const messageId = `msg-${Date.now()}-${bot.id.substring(0, 8)}`;
             const responsePayload = {
+                id: messageId,
                 roomId,
                 sender: bot.id,
                 content: result.content,

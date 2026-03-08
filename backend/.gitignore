@@ -1,0 +1,50 @@
+# Environment variables (contains sensitive data)
+.env
+.env.local
+.env.*.local
+
+# Database files
+*.db
+*.db-journal
+data/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Directory for instrumented libs
+lib-cov
+
+# Coverage directory
+coverage/
+
+# Node modules
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+*.bak2
+*.backup2
