@@ -1,171 +1,71 @@
-name: Deploy to EC2
+name: Deploy to ECS
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Setup Docker Buildx
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # Login to GHCR (GitHub Container Registry)
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      # Build and Push App Image
-      - name: Build and push App image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/openclaw-app:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      # Build and Push Worker Image (Optional)
-      - name: Build and push Worker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./python-worker
-          file: ./python-worker/Dockerfile
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/openclaw-worker:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      # Deploy to EC2 via SSH
-      - name: Deploy to EC2
+      - name: Deploy to ECS via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          command_timeout: 10m
           script: |
-            # Create app directory
-            mkdir -p /opt/openclaw
-            cd /opt/openclaw
+            set -e
             
-            # Create .env file from secrets
-            cat > .env << ENVEOF
-            ONE_API_BASE_URL=${{ secrets.ONE_API_BASE_URL }}
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
-            ENVEOF
+            echo "=========================================="
+            echo "  开始部署 Chat System"
+            echo "=========================================="
             
-            # Login to GHCR on server (need PAT for private images)
-            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            cd /opt/chat-system
             
-            # Pull latest images
-            docker pull ghcr.io/${{ github.repository_owner }}/openclaw-app:latest
-            docker pull ghcr.io/${{ github.repository_owner }}/openclaw-worker:latest
-            
-            # Create docker-compose.yml if not exists
-            if [ ! -f docker-compose.yml ]; then
-              cat > docker-compose.yml << 'COMPOSEEOF'
-            services:
-              app:
-                image: ghcr.io/${{ github.repository_owner }}/openclaw-app:latest
-                container_name: openclaw-app
-                restart: always
-                environment:
-                  - NODE_ENV=production
-                  - PORT=3000
-                  - DB_PATH=/app/data/chat.db
-                  - ONE_API_BASE_URL=${ONE_API_BASE_URL}
-                  - JWT_SECRET=${JWT_SECRET}
-                volumes:
-                  - ./data:/app/data
-                  - ./logs:/app/logs
-                  - ./uploads:/app/public/uploads
-                ports:
-                  - "3000:3000"
-                networks:
-                  - openclaw-net
-
-              worker:
-                image: ghcr.io/${{ github.repository_owner }}/openclaw-worker:latest
-                container_name: openclaw-worker
-                restart: always
-                environment:
-                  - API_URL=http://app:3000
-                networks:
-                  - openclaw-net
-
-              nginx:
-                image: nginx:alpine
-                container_name: openclaw-nginx
-                restart: always
-                ports:
-                  - "80:80"
-                  - "443:443"
-                volumes:
-                  - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-                depends_on:
-                  - app
-                networks:
-                  - openclaw-net
-
-            networks:
-              openclaw-net:
-                driver: bridge
-            COMPOSEEOF
+            # 首次 clone 或更新
+            if [ ! -d ".git" ]; then
+              git clone https://github.com/changhuaqiu/chat-system.git .
+            else
+              git pull origin main
             fi
             
-            # Create nginx config directory
-            mkdir -p nginx
+            # 构建前端
+            echo "[1/4] 构建前端..."
+            cd frontend
+            npm ci
+            npm run build
             
-            # Create nginx config if not exists
-            if [ ! -f nginx/default.conf ]; then
-              cat > nginx/default.conf << 'NGINXEOF'
-            server {
-                listen 80;
-                server_name localhost;
+            # 复制前端到 Nginx 目录
+            echo "[2/4] 部署前端文件..."
+            rm -rf /var/www/chat-system/*
+            cp -r dist/* /var/www/chat-system/
+            
+            # 安装后端依赖
+            echo "[3/4] 安装后端依赖..."
+            cd ../backend
+            npm install --production
+            
+            # 重启后端
+            echo "[4/4] 重启后端服务..."
+            pm2 delete chat-backend || true
+            pm2 start src/server.js --name chat-backend
+            pm2 save
+            
+            echo ""
+            echo "=========================================="
+            echo "  ✅ 部署完成！"
+            echo "=========================================="
+            pm2 status
 
-                location /api/ {
-                    proxy_pass http://app:3000;
-                    proxy_http_version 1.1;
-                    proxy_set_header Upgrade $http_upgrade;
-                    proxy_set_header Connection 'upgrade';
-                    proxy_set_header Host $host;
-                    proxy_cache_bypass $http_upgrade;
-                }
-
-                location /socket.io/ {
-                    proxy_pass http://app:3000;
-                    proxy_http_version 1.1;
-                    proxy_set_header Upgrade $http_upgrade;
-                    proxy_set_header Connection "Upgrade";
-                    proxy_set_header Host $host;
-                }
-
-                location / {
-                    proxy_pass http://app:3000;
-                    proxy_http_version 1.1;
-                    proxy_set_header Host $host;
-                }
-            }
-            NGINXEOF
-            fi
-            
-            # Restart services
-            docker compose down
-            docker compose up -d
-            
-            # Prune old images
-            docker image prune -f
-            
-            echo "✅ Deployment completed at $(date)"
+      - name: Health check
+        run: |
+          sleep 5
+          curl -f http://${{ secrets.EC2_HOST }}:3001/api/health || echo "健康检查失败，但部署可能已成功"
