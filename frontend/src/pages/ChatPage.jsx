@@ -45,18 +45,18 @@ function ChatPage() {
     const initData = async () => {
       try {
         setLoading(true);
-        const [agentsData, emojisData, imagesData, roomsData] = await Promise.all([
-          apiService.getAgents(),
-          apiService.getEmojis(),
-          apiService.getUploadedImages(),
-          apiService.getRooms()
-        ]);
-        
+
+        // 并行但独立地获取数据，避免一个失败影响全部
+        const agentsData = await apiService.getAgents().catch(() => ({ agents: [] }));
+        const emojisData = await apiService.getEmojis().catch(() => ({ emojis: [] }));
+        const imagesData = await apiService.getUploadedImages().catch(() => ({ images: [] }));
+        const roomsData = await apiService.getRooms().catch(() => ({ rooms: [] }));
+
         setAgentList(agentsData.agents || []);
         setEmojiList(emojisData.emojis || []);
         setUploadedImages(imagesData.images || []);
         setRooms(roomsData.rooms || []);
-        
+
       } catch (error) {
         console.error('Initialization failed:', error);
       } finally {
@@ -69,7 +69,7 @@ function ChatPage() {
   // Room Info & Messages
   useEffect(() => {
     const currentId = roomId || 'general';
-    
+
     // Fetch Room Info
     const fetchRoom = async () => {
         try {
@@ -88,14 +88,30 @@ function ChatPage() {
     };
     fetchRoom();
 
-    // Fetch Messages
+    // Fetch Messages - only if we have a valid room
     const fetchMessages = async () => {
         setMessages([]);
         try {
-            const data = await apiService.getRoomMessages(currentId);
+            // Check if room exists in the list first
+            const roomExists = rooms.some(r => r.id === currentId);
+            if (!roomExists && currentId === 'general') {
+                // General room doesn't exist, try to get first available room
+                if (rooms.length > 0) {
+                    console.log('General room not found, you may want to create it or select an existing room');
+                }
+            }
+
+            const data = await apiService.getRoomMessages(currentId).catch(err => {
+                // 404 means room not found, return empty messages
+                if (err.response?.status === 404) {
+                    console.log(`Room "${currentId}" not found, showing empty messages`);
+                    return { messages: [] };
+                }
+                throw err;
+            });
             setMessages(data.messages || []);
         } catch (e) {
-            console.error(e);
+            console.error('Failed to fetch messages:', e);
         }
     };
     fetchMessages();

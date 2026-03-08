@@ -102,12 +102,13 @@ const apiService = {
       if (response.data && Array.isArray(response.data.bots)) {
         return { agents: response.data.bots };
       }
-      
+
       // 降级尝试旧接口
       const legacyResponse = await axios.get(`${API_BASE_URL}/agents`);
       return legacyResponse.data;
     } catch (error) {
       console.error('获取 Agent 列表失败:', error);
+      // 网络错误时返回空数组，避免阻塞页面加载
       return { agents: [] };
     }
   },
@@ -171,8 +172,16 @@ const apiService = {
 
   // 获取房间消息
   getRoomMessages: async (roomId, limit = 50) => {
-    const response = await axios.get(`${API_BASE_URL}/api/rooms/${roomId}/messages?limit=${limit}`);
-    return response.data;
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/rooms/${roomId}/messages?limit=${limit}`);
+      return response.data;
+    } catch (error) {
+      // 404 表示房间不存在，返回空消息列表
+      if (error.response?.status === 404) {
+        return { messages: [] };
+      }
+      throw error;
+    }
   },
 
   // 发送消息 (REST API)

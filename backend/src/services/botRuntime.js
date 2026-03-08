@@ -221,10 +221,11 @@ export class BotRuntime {
    * @param {Array} conversationHistory - Conversation history
    * @param {string} providerType - Provider type
    * @param {Object} config - Bot config
-   * @param {Object} options - Additional options (roomId for World Info)
+   * @param {Object} options - Additional options (roomId for World Info, replyTo for reply context)
    */
   async generateResponse(botId, conversationHistory, providerType = 'llm', config = {}, options = {}) {
     try {
+      console.log(`[BotRuntime] Generating response for ${botId} (provider: ${providerType})`);
       const adaptor = await this.getAdaptor(botId, providerType, config);
 
       // 1. Load Character Card
@@ -258,7 +259,18 @@ export class BotRuntime {
         messages.unshift({ role: 'system', content: systemPrompt });
       }
 
-      // 6. Context Compression Logic
+      // 6. Add Reply Context if provided
+      if (options.replyTo) {
+        // Insert a system message before the last user message to indicate this is a reply
+        const replyContext = {
+          role: 'system',
+          content: `[Reply Context] You are replying to the message above. Respond directly to the sender in a conversational manner.`
+        };
+        // Insert before the last user message
+        messages.splice(messages.length - 1, 0, replyContext);
+      }
+
+      // 7. Context Compression Logic
       const MAX_HISTORY_LENGTH = 10; // Keep last 10 messages
       if (messages.length > MAX_HISTORY_LENGTH + 1) { // +1 for system prompt
         const systemMsg = messages[0];
@@ -267,14 +279,16 @@ export class BotRuntime {
         console.log(`[BotRuntime] Context compressed for ${botId}`);
       }
 
-      // 7. Get the last message for the actual chat
+      // 8. Get the last message for the actual chat
       const lastMessage = messages[messages.length - 1].content;
 
       const startTime = Date.now();
 
-      // 8. Call the adaptor with full history
+      // 9. Call the adaptor with full history
       const responseContent = await adaptor.chat(lastMessage, { history: messages });
       const latency = Date.now() - startTime;
+
+      console.log(`[BotRuntime] Response generated successfully for ${botId} (latency: ${latency}ms)`);
 
       return {
         success: true,
@@ -283,7 +297,7 @@ export class BotRuntime {
         metrics: { latency }
       };
     } catch (error) {
-      console.error(`Error generating response for ${botId}:`, error);
+      console.error(`[BotRuntime] Error generating response for ${botId}:`, error);
       return { success: false, error: error.message };
     }
   }

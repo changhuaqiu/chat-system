@@ -73,7 +73,12 @@ class OneApiService {
    * Check if One-API is configured (not localhost)
    */
   isConfigured() {
-    return this.ONE_API_URL !== 'http://localhost:3002' && this.ROOT_TOKEN !== '123456';
+    const baseUrl = this.ONE_API_URL;
+    const hasValidToken = this.ROOT_TOKEN !== '123456';
+    const hasSessionCookie = !!process.env.ONE_API_SESSION_COOKIE;
+
+    // Consider configured if base URL is not default AND (has valid token OR has session cookie)
+    return baseUrl !== 'http://localhost:3002' && (hasValidToken || hasSessionCookie);
   }
 
   async checkHealth() {

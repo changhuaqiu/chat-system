@@ -7,7 +7,7 @@
  * 3. 支持自由聊天室和需要@的聊天室
  */
 
-const axios = require('axios');
+import axios from 'axios';
 
 class AgentRouter {
   constructor() {
@@ -165,4 +165,4 @@ const agentRouter = new AgentRouter();
   }, 60000); // 每分钟刷新
 })();
 
-module.exports = agentRouter;
+export default agentRouter;

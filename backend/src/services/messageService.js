@@ -1,3 +1,5 @@
+import { db } from '../db.js';
+
 export class MessageService {
   constructor(database) {
     this.db = database;
@@ -105,4 +107,4 @@ export class MessageService {
   }
 }
 
-export const messageService = null; // Will be initialized with database
+export const messageService = new MessageService(db);
