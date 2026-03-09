@@ -1,52 +1,61 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { apiService } from '../services/api';
 
 const LogPage = () => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all, error, warn, info
+  const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
 
   useEffect(() => {
     fetchLogs();
   }, []);
 
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     try {
       setLoading(true);
       const data = await apiService.getLogs();
-      // Ensure data is an array
       setLogs(Array.isArray(data) ? data : (data.logs || []));
     } catch (error) {
       console.error('Failed to fetch logs:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const getLevelColor = (level) => {
+  const getLevelColor = useMemo(() => (level) => {
     switch (level?.toLowerCase()) {
       case 'error': return 'bg-red-100 text-red-700 border-red-200';
       case 'warn': return 'bg-orange-100 text-orange-700 border-orange-200';
       case 'info': return 'bg-blue-100 text-blue-700 border-blue-200';
       default: return 'bg-gray-100 text-gray-700 border-gray-200';
     }
-  };
+  }, []);
 
-  const filteredLogs = logs.filter(log => {
-    const matchFilter = filter === 'all' || log.level?.toLowerCase() === filter;
-    const matchSearch = !search || 
-      log.message?.toLowerCase().includes(search.toLowerCase()) ||
-      log.agent_id?.toLowerCase().includes(search.toLowerCase());
-    return matchFilter && matchSearch;
-  });
+  const filteredLogs = useMemo(() => {
+    return logs.filter(log => {
+      const matchFilter = filter === 'all' || log.level?.toLowerCase() === filter;
+      const matchSearch = !search ||
+        log.message?.toLowerCase().includes(search.toLowerCase()) ||
+        log.agent_id?.toLowerCase().includes(search.toLowerCase());
+      return matchFilter && matchSearch;
+    });
+  }, [logs, filter, search]);
 
-  const stats = {
+  const stats = useMemo(() => ({
     total: logs.length,
     error: logs.filter(l => l.level === 'error').length,
     warn: logs.filter(l => l.level === 'warn').length,
     info: logs.filter(l => l.level === 'info').length
-  };
+  }), [logs]);
+
+  const handleFilterChange = useCallback((typeId) => {
+    setFilter(typeId);
+  }, []);
+
+  const handleSearchChange = useCallback((e) => {
+    setSearch(e.target.value);
+  }, []);
 
   return (
     <div className="flex-1 overflow-y-auto bg-[#f5f5f7] p-8 font-apple">
@@ -86,10 +95,10 @@ const LogPage = () => {
           ].map(type => (
             <button
               key={type.id}
-              onClick={() => setFilter(type.id)}
+              onClick={() => handleFilterChange(type.id)}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                filter === type.id 
-                  ? 'bg-[#007aff] text-white shadow-sm' 
+                filter === type.id
+                  ? 'bg-[#007aff] text-white shadow-sm'
                   : 'text-[#1d1d1f] hover:bg-[#f5f5f7]'
               }`}
             >
@@ -97,13 +106,13 @@ const LogPage = () => {
             </button>
           ))}
         </div>
-        
+
         <div className="relative w-full md:w-80">
           <input
             type="text"
             placeholder="搜索日志..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={handleSearchChange}
             className="w-full pl-9 pr-4 py-2 bg-white border border-[#d2d2d7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/20 focus:border-[#007aff] transition-all"
           />
           <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
@@ -126,7 +135,7 @@ const LogPage = () => {
                 <span className={`flex-shrink-0 px-2.5 py-0.5 rounded text-[11px] font-bold uppercase tracking-wide border ${getLevelColor(log.level)}`}>
                   {log.level}
                 </span>
-                
+
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-baseline mb-1">
                     <p className="text-sm font-medium text-[#1d1d1f] font-mono truncate pr-4">
