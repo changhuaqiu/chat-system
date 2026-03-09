@@ -126,7 +126,12 @@ const start = async () => {
 
     io.on('connection', (socket) => {
       console.log(`Client connected: ${socket.id}`);
-      
+
+      // === 心跳处理 ===
+      socket.on('heartbeat', (data) => {
+        socket.emit('heartbeat_ack', { timestamp: data.timestamp, serverTime: Date.now() });
+      });
+
       socket.on('joinRoom', ({ room }) => {
         socket.join(room);
         console.log(`Client ${socket.id} joined room: ${room}`);

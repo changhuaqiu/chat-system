@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { socket } from '../services/api';
 import { apiService } from '../services/api';
@@ -261,12 +261,27 @@ function ChatPage() {
       );
   }
 
-  // Prepare Member List (User + Online Agents)
-  // Since we don't have multi-user auth yet, "Members" are just the current user + agents
-  const members = [
+  // Prepare Member List (User + Online Agents) - memoized
+  const members = useMemo(() => [
       { id: 'user', name: 'Current User', status: 'online', avatar: 'Me', color: 'bg-blue-500' },
       ...agentList.map(a => ({ ...a, color: a.color || 'bg-gray-400' }))
-  ];
+  ], [agentList]);
+
+  // Memoized callback handlers
+  const handleSelectRoom = useCallback((id) => navigate(`/chat/${id}`), [navigate]);
+
+  const handleEmojiSelect = useCallback((emoji) => {
+      setInput(prev => prev + emoji);
+      setTimeout(() => inputRef.current?.focus(), 0);
+  }, []);
+
+  const handleImageSelect = useCallback((url) => {
+      handleSendMessage('', 'image', url);
+      setShowImagePicker(false);
+  }, [handleSendMessage]);
+
+  const handleInvite = useCallback(() => setShowInviteModal(true), []);
+  const handleManageWorldInfo = useCallback(() => setShowWorldInfoModal(true), []);
 
   return (
     <Layout>
@@ -275,7 +290,7 @@ function ChatPage() {
             <ChatSidebar
                 rooms={rooms}
                 currentRoomId={roomId || 'general'}
-                onSelectRoom={(id) => navigate(`/chat/${id}`)}
+                onSelectRoom={handleSelectRoom}
                 onCreateRoom={handleCreateRoom}
             />
 
@@ -286,7 +301,7 @@ function ChatPage() {
                 currentUser="user"
                 input={input}
                 setInput={setInput}
-                onSendMessage={() => handleSendMessage()}
+                onSendMessage={handleSendMessage}
                 onTyping={handleTyping}
                 typingUsers={typingUsers}
                 typingAgents={typingAgents}
@@ -298,15 +313,9 @@ function ChatPage() {
                 fileInputRef={fileInputRef}
                 handleImageUpload={handleImageUpload}
                 emojiList={emojiList}
-                handleEmojiSelect={(emoji) => {
-                    setInput(prev => prev + emoji);
-                    setTimeout(() => inputRef.current?.focus(), 0);
-                }}
+                handleEmojiSelect={handleEmojiSelect}
                 uploadedImages={uploadedImages}
-                handleImageSelect={(url) => {
-                    handleSendMessage('', 'image', url);
-                    setShowImagePicker(false);
-                }}
+                handleImageSelect={handleImageSelect}
                 replyingTo={replyingTo}
                 setReplyingTo={setReplyingTo}
                 inputRef={inputRef}
@@ -315,10 +324,10 @@ function ChatPage() {
             {/* Right Column: Member Sidebar */}
             <MemberSidebar
                 members={members}
-                robots={agentList} // All agents are "available robots" to add/mention
-                onInvite={() => setShowInviteModal(true)}
+                robots={agentList}
+                onInvite={handleInvite}
                 onAddRobot={handleAddRobot}
-                onManageWorldInfo={() => setShowWorldInfoModal(true)}
+                onManageWorldInfo={handleManageWorldInfo}
             />
 
             {/* Modals */}

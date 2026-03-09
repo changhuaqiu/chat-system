@@ -4,7 +4,42 @@ import { io } from 'socket.io-client';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
 const socket = io(API_BASE_URL, {
-  transports: ['websocket', 'polling']
+  transports: ['websocket', 'polling'],
+  reconnection: true,
+  reconnectionDelay: 1000,
+  reconnectionDelayMax: 5000,
+  reconnectionAttempts: 10
+});
+
+// === 心跳机制 ===
+let heartbeatInterval = null;
+
+// 启动心跳
+export const startHeartbeat = (intervalMs = 25000) => {
+  stopHeartbeat(); // 清除旧的
+
+  heartbeatInterval = setInterval(() => {
+    if (socket.connected) {
+      socket.emit('heartbeat', { timestamp: Date.now() });
+    }
+  }, intervalMs);
+
+  console.log('[Heartbeat] Started with interval:', intervalMs, 'ms');
+};
+
+// 停止心跳
+export const stopHeartbeat = () => {
+  if (heartbeatInterval) {
+    clearInterval(heartbeatInterval);
+    heartbeatInterval = null;
+    console.log('[Heartbeat] Stopped');
+  }
+};
+
+// 监听心跳响应
+socket.on('heartbeat_ack', (data) => {
+  const latency = Date.now() - data.timestamp;
+  console.log('[Heartbeat] ACK received, latency:', latency, 'ms');
 });
 
 // API 服务
