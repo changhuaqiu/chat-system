@@ -1,14 +1,10 @@
 /**
- * Agent Service - OpenClaw Gateway 集成服务
- * 采用单例模式管理所有 OpenClaw Agent 连接
+ * Chat-System Agent Service
+ * 基于 OpenClaw Gateway 的 Agent 管理服务
  */
 
-// 简化的 sessions_send 模拟（实际应调用 gateway API）
-const sessionsSend = (sessionKey, message) => {
-  // 实际实现应调用 gateway sessions_send
-  console.log(`Sending to session ${sessionKey}:`, message);
-  // TODO: 捕获返回值并处理响应
-};
+import { gatewayClient } from './GatewayClient.js';
+import { config } from '../config/index.js';
 
 // Agent 状态管理
 class AgentService {
@@ -27,12 +23,12 @@ class AgentService {
       status: 'online',
       lastActive: Date.now()
     });
-    
+
     this.agentSessions.set(agentId, sessionKey);
     this.lastHeartbeat.set(agentId, Date.now());
-    
+
     console.log(`Agent registered: ${agentId} (${sessionKey})`);
-    
+
     // 列出所有已注册 agents
     console.log('Current agents:', Array.from(this.agents.keys()));
   }
@@ -48,23 +44,22 @@ class AgentService {
   }
 
   // 发送消息给 agent
-  sendMessage(agentId, message) {
+  async sendMessage(agentId, message) {
     const sessionKey = this.agentSessions.get(agentId);
-    
+
     if (!sessionKey) {
       console.error(`Agent ${agentId} not found`);
       return { success: false, error: 'Agent not found' };
     }
-    
+
     try {
-      // 实际调用 gateway sessions_send
-      // await sessions_send({ sessionKey, message });
-      sessionsSend(sessionKey, message);
-      
+      // 调用 GatewayClient sessions_send
+      const result = await gatewayClient.sessionsSend(sessionKey, message);
+
       this.updateLastActive(agentId);
-      return { success: true, agentId };
+      return { success: true, agentId, data: result };
     } catch (error) {
-      console.error(`Failed to send message to ${agentId}:`, error);
+      console.error(`Failed to send message to ${agentId}:`, error.message);
       return { success: false, error: error.message };
     }
   }
@@ -72,12 +67,12 @@ class AgentService {
   // 批量发送消息
   broadcastMessage(message) {
     const results = [];
-    
+
     for (const [agentId, sessionKey] of this.agentSessions) {
       const result = this.sendMessage(agentId, message);
       results.push({ agentId, ...result });
     }
-    
+
     return results;
   }
 
@@ -114,7 +109,7 @@ class AgentService {
   checkHeartbeats(maxTimeoutMs = 60000) {
     const now = Date.now();
     const inactiveAgents = [];
-    
+
     for (const [agentId, heartbeat] of this.lastHeartbeat) {
       if (now - heartbeat > maxTimeoutMs) {
         const agent = this.agents.get(agentId);
@@ -125,73 +120,89 @@ class AgentService {
         }
       }
     }
-    
+
     return inactiveAgents;
   }
 
   // 初始化并动态获取所有 OpenClaw agents
   async initialize() {
-    // 从 sessions_list 获取所有活跃 agents (6个)
-    // 主管: main (model: glm-5)
-    // 开发: dev (model: MiniMax-M2.5)
-    // 全栈开发: fullstack-dev (model: qwen3-coder-next)
-    // UX设计: ux-design (model: glm-4.7-flashx)
-    // 研发主管: zhuguan (model: deepseek-reasoner)
-    // 测试: qa-tester (model: doubao-seed-code)
+    try {
+      // 尝试从 OpenClaw Gateway 获取 agents
+      const agentsData = await gatewayClient.getAgents();
+      const remoteAgents = agentsData.agents || [];
+
+      if (remoteAgents.length > 0) {
+        for (const agent of remoteAgents) {
+          const sessionKey = `agent:${agent.id}:feishu:group:oc_7c67a3a4814e100e92a4eea9a27afd95`;
+          this.registerAgent(agent.id, sessionKey, agent);
+        }
+        console.log(`Initialized ${this.agents.size} agents from OpenClaw Gateway`);
+      } else {
+        // 降级：使用默认 agents 配置
+        await this.initializeDefaultAgents();
+      }
+    } catch (error) {
+      console.warn('[AgentService] Failed to connect to OpenClaw Gateway, using default agents:', error.message);
+      // 降级：使用默认 agents 配置
+      await this.initializeDefaultAgents();
+    }
+
+    return this.getAllAgents();
+  }
+
+  // 初始化默认 agents（降级方案）
+  async initializeDefaultAgents() {
     const defaultAgents = [
-      { 
-        id: 'main', 
-        name: '主管 - main', 
+      {
+        id: 'main',
+        name: '主管 - main',
         role: 'management',
         color: 'bg-red-500',
         avatar: '主'
       },
-      { 
-        id: 'dev', 
-        name: '开发 - dev', 
+      {
+        id: 'dev',
+        name: '开发 - dev',
         role: 'development',
         color: 'bg-blue-500',
         avatar: '开'
       },
-      { 
-        id: 'fullstack-dev', 
-        name: '全栈开发 - fullstack-dev', 
+      {
+        id: 'fullstack-dev',
+        name: '全栈开发 - fullstack-dev',
         role: 'code-generation',
         color: 'bg-green-500',
         avatar: '全'
       },
-      { 
-        id: 'ux-design', 
-        name: 'UX设计 - ux-design', 
+      {
+        id: 'ux-design',
+        name: 'UX 设计 - ux-design',
         role: 'design',
         color: 'bg-purple-500',
         avatar: 'UX'
       },
-      { 
-        id: 'zhuguan', 
-        name: '研发主管 - zhuguan', 
+      {
+        id: 'zhuguan',
+        name: '研发主管 - zhuguan',
         role: 'management',
         color: 'bg-orange-500',
         avatar: '主'
       },
-      { 
-        id: 'qa-tester', 
-        name: '测试 - qa-tester', 
+      {
+        id: 'qa-tester',
+        name: '测试 - qa-tester',
         role: 'testing',
         color: 'bg-teal-500',
         avatar: '测'
       }
     ];
-    
+
     for (const agent of defaultAgents) {
-      // 实际应从 gateway 获取 sessionKey
-      // 临时使用真实 sessionKey (从 sessions_list 获取)
       const sessionKey = `agent:${agent.id}:feishu:group:oc_7c67a3a4814e100e92a4eea9a27afd95`;
       this.registerAgent(agent.id, sessionKey, agent);
     }
-    
-    console.log(`Initialized ${this.agents.size} agents from OpenClaw`);
-    return this.getAllAgents();
+
+    console.log(`Initialized ${this.agents.size} default agents`);
   }
 }
 

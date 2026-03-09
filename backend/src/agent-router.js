@@ -8,6 +8,7 @@
  */
 
 import axios from 'axios';
+import { config } from './config/index.js';
 
 class AgentRouter {
   constructor() {
@@ -21,7 +22,7 @@ class AgentRouter {
   async loadAgents() {
     try {
       // OpenClaw API: 查询所有 agents
-      const response = await axios.get('http://localhost:8000/api/agents', {
+      const response = await axios.get(`${config.openclaw.gatewayUrl}/api/agents`, {
         timeout: 5000
       });
       
