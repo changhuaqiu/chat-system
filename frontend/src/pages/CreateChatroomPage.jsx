@@ -1,13 +1,26 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
+import Layout from '../components/Layout';
+import ModeSelector from '../components/Collaboration/ModeSelector';
 
 function CreateChatroomPage() {
   const navigate = useNavigate();
+  const [step, setStep] = useState(1); // 1: 选择模式，2: 填写信息
+  const [collaborationMode, setCollaborationMode] = useState('');
   const [chatroomName, setChatroomName] = useState('');
-  const [chatroomType, setChatroomType] = useState('free');
   const [description, setDescription] = useState('');
+  const [goal, setGoal] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const handleModeSelect = (mode) => {
+    setCollaborationMode(mode);
+    setStep(2);
+  };
+
+  const handleBack = () => {
+    setStep(1);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,10 +34,11 @@ function CreateChatroomPage() {
       const result = await apiService.createRoom(
         chatroomName,
         description,
-        chatroomType,
-        'admin'
+        collaborationMode,
+        'admin',
+        goal
       );
-      
+
       if (result.success) {
         alert('聊天室创建成功！');
         navigate('/chat/' + result.room.id);
@@ -41,163 +55,120 @@ function CreateChatroomPage() {
     navigate(-1);
   };
 
+  const modeNames = {
+    'war-room': '作战室模式',
+    'chat-room': '聊天室模式',
+    'panel': '专家会诊模式',
+    'standalone': '独立模式'
+  };
+
   return (
-    <div className="bg-gray-50 min-h-screen flex items-center justify-center p-8">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-gray-800">创建新聊天室</h1>
-          <button onClick={onCancel} className="text-gray-500 hover:text-gray-700">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* 聊天室名称 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              聊天室名称
-            </label>
-            <input
-              type="text"
-              value={chatroomName}
-              onChange={(e) => setChatroomName(e.target.value)}
-              placeholder="例如：公共讨论区、客服支持群"
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-
-          {/* 聊天室类型 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              聊天室类型
-            </label>
-            <div className="space-y-3">
-              {/* 自由聊天室 */}
-              <label
-                className={`flex items-start p-4 border-2 rounded-xl cursor-pointer transition ${
-                  chatroomType === 'free'
-                    ? 'border-indigo-500 bg-indigo-50'
-                    : 'border-gray-200 hover:border-indigo-300'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="chatroomType"
-                  value="free"
-                  checked={chatroomType === 'free'}
-                  onChange={(e) => setChatroomType(e.target.value)}
-                  className="mt-1 mr-3"
-                />
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <svg
-                      className="w-5 h-5 text-green-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                      />
-                    </svg>
-                    <h4 className="font-bold text-gray-800">自由聊天室</h4>
-                  </div>
-                  <p className="text-gray-500 text-sm">
-                    所有 Agent 都可以自由发言，不需要 @ 触发
-                  </p>
-                  <ul className="text-xs text-gray-400 mt-2 space-y-1">
-                    <li>• 适合公共聊天室、讨论区</li>
-                    <li>• Agent 可以主动发言</li>
-                    <li>• 用户可以与任何 Agent 交互</li>
-                  </ul>
-                </div>
-              </label>
-
-              {/* 需要 @ 的聊天室 */}
-              <label
-                className={`flex items-start p-4 border-2 rounded-xl cursor-pointer transition ${
-                  chatroomType === '@only'
-                    ? 'border-indigo-500 bg-indigo-50'
-                    : 'border-gray-200 hover:border-indigo-300'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="chatroomType"
-                  value="@only"
-                  checked={chatroomType === '@only'}
-                  onChange={(e) => setChatroomType(e.target.value)}
-                  className="mt-1 mr-3"
-                />
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <svg
-                      className="w-5 h-5 text-indigo-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-                      />
-                    </svg>
-                    <h4 className="font-bold text-gray-800">需要 @ 的聊天室</h4>
-                  </div>
-                  <p className="text-gray-500 text-sm">
-                    @ Agent 来触发回复，Agent 不会主动发言
-                  </p>
-                  <ul className="text-xs text-gray-400 mt-2 space-y-1">
-                    <li>• 适合私密聊天室、客服群</li>
-                    <li>• Agent 只在被 @ 时才能回复</li>
-                    <li>• 避免无关的自动回复</li>
-                  </ul>
-                </div>
-              </label>
+    <Layout>
+      <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto">
+        <div className="w-full max-w-4xl">
+          {/* 顶部导航 */}
+          <div className="flex items-center gap-4 mb-8">
+            <button
+              onClick={step === 1 ? onCancel : handleBack}
+              className="p-2 rounded-xl btn-secondary text-white/60 hover:text-white transition-all"
+            >
+              <i className="ri-arrow-left-line text-xl" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-white">
+                {step === 1 ? '创建新聊天室' : '房间配置'}
+              </h1>
+              <p className="text-sm text-white/40 mt-1">
+                {step === 1
+                  ? '选择适合你需求的协作模式'
+                  : `已选择：${collaborationMode ? modeNames[collaborationMode] : ''}`}
+              </p>
             </div>
           </div>
 
-          {/* 描述 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              描述（可选）
-            </label>
-            <textarea
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="简述这个聊天室的目的..."
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-            />
-          </div>
+          {/* 步骤 1: 模式选择 */}
+          {step === 1 && (
+            <div className="fade-in-up">
+              <ModeSelector
+                selectedMode={collaborationMode}
+                onModeSelect={handleModeSelect}
+              />
+            </div>
+          )}
 
-          {/* 提交按钮 */}
-          <div className="flex items-center justify-end space-x-3 pt-4">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
-            >
-              取消
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition disabled:opacity-50"
-            >
-              {submitting ? '创建中...' : '创建聊天室'}
-            </button>
-          </div>
-        </form>
+          {/* 步骤 2: 房间配置 */}
+          {step === 2 && (
+            <div className="glass-panel rounded-2xl p-8 fade-in-up">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-white/70 mb-2">
+                      房间名称
+                    </label>
+                    <input
+                      type="text"
+                      value={chatroomName}
+                      onChange={(e) => setChatroomName(e.target.value)}
+                      placeholder="输入房间名称..."
+                      className="w-full px-4 py-3 input-field rounded-xl text-white placeholder-white/30 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-white/70 mb-2">
+                      目标（可选）
+                    </label>
+                    <input
+                      type="text"
+                      value={goal}
+                      onChange={(e) => setGoal(e.target.value)}
+                      placeholder="描述这个房间的目标..."
+                      className="w-full px-4 py-3 input-field rounded-xl text-white placeholder-white/30 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-white/70 mb-2">
+                    房间描述
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="描述这个房间的用途..."
+                    className="w-full px-4 py-3 input-field rounded-xl text-white placeholder-white/30 focus:outline-none resize-none"
+                  />
+                </div>
+
+                {/* 操作按钮 */}
+                <div className="flex items-center justify-between pt-6 border-t border-white/5">
+                  <div className="text-sm text-white/30">
+                    请确认房间信息无误
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={handleBack}
+                      className="px-6 py-2.5 btn-secondary text-white/70 rounded-xl font-medium"
+                    >
+                      返回
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="px-6 py-2.5 btn-primary text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {submitting ? '创建中...' : '创建房间'}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 }
 

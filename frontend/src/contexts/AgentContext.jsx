@@ -1,75 +1,52 @@
-/**
- * Agent Context - 全局 Agent 状态管理
- *
- * 提供全局 Agent 列表状态，避免多个组件重复请求
- */
-
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { apiService } from '../services/api';
 
-const AgentContext = createContext(null);
+const AgentContext = createContext();
 
 export const AgentProvider = ({ children }) => {
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [lastUpdate, setLastUpdate] = useState(null);
 
-  // 获取 Agent 列表
-  const fetchAgents = useCallback(async () => {
+  useEffect(() => {
+    loadAgents();
+  }, []);
+
+  const loadAgents = useCallback(async () => {
     try {
       setLoading(true);
+      const response = await apiService.getAgents();
+      setAgents(response.agents || []);
+      setLastUpdate(new Date());
       setError(null);
-      const data = await apiService.getAgents();
-      setAgents(data.agents || []);
     } catch (err) {
-      console.error('[AgentContext] Failed to fetch agents:', err);
+      console.error('Failed to load agents:', err);
       setError(err.message);
-      setAgents([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // 初始加载
-  useEffect(() => {
-    fetchAgents();
-  }, [fetchAgents]);
+  const updateAgent = useCallback((agentId, updates) => {
+    setAgents(prev => prev.map(agent => 
+      agent.id === agentId ? { ...agent, ...updates } : agent
+    ));
+  }, []);
 
-  // 刷新 Agent 列表
-  const refreshAgents = useCallback(() => {
-    return fetchAgents();
-  }, [fetchAgents]);
+  const removeAgent = useCallback((agentId) => {
+    setAgents(prev => prev.filter(agent => agent.id !== agentId));
+  }, []);
 
-  // 根据 ID 获取 Agent
-  const getAgentById = useCallback((agentId) => {
-    return agents.find(a => a.id === agentId) || null;
-  }, [agents]);
-
-  // 根据名称获取 Agent
-  const getAgentByName = useCallback((name) => {
-    return agents.find(a => a.name === name) || null;
-  }, [agents]);
-
-  // 获取在线 Agents
-  const getOnlineAgents = useCallback(() => {
-    return agents.filter(a => a.status === 'online');
-  }, [agents]);
-
-  // 根据角色获取 Agents
-  const getAgentsByRole = useCallback((role) => {
-    return agents.filter(a => a.role === role);
-  }, [agents, agents]);
-
-  const value = {
+  const value = useMemo(() => ({
     agents,
     loading,
     error,
-    refreshAgents,
-    getAgentById,
-    getAgentByName,
-    getOnlineAgents,
-    getAgentsByRole
-  };
+    lastUpdate,
+    loadAgents,
+    updateAgent,
+    removeAgent
+  }), [agents, loading, error, lastUpdate, loadAgents, updateAgent, removeAgent]);
 
   return (
     <AgentContext.Provider value={value}>

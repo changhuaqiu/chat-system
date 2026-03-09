@@ -1,0 +1,350 @@
+/* 赛博科技风主题变量 */
+:root {
+  /* 主色调 - 霓虹蓝紫 */
+  --cyber-primary: #6366f1;
+  --cyber-primary-light: #818cf8;
+  --cyber-primary-dark: #4f46e5;
+
+  /* 霓虹色 */
+  --neon-blue: #00f3ff;
+  --neon-purple: #bc13fe;
+  --neon-pink: #f43f5e;
+  --neon-green: #00ff88;
+  --neon-orange: #f97316;
+  --neon-red: #ff3860;
+
+  /* 背景色 */
+  --bg-dark: #0a0a12;
+  --bg-darker: #050508;
+  --bg-light: #12121f;
+  --bg-card: rgba(255, 255, 255, 0.03);
+  --bg-glass: rgba(255, 255, 255, 0.05);
+
+  /* 边框 */
+  --border-glass: rgba(255, 255, 255, 0.08);
+  --border-glass-light: rgba(255, 255, 255, 0.05);
+  --border-primary: rgba(99, 102, 241, 0.3);
+  --border-primary-light: rgba(99, 102, 241, 0.5);
+
+  /* 文字 */
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0b0;
+  --text-muted: rgba(255, 255, 255, 0.4);
+  --text-dim: rgba(255, 255, 255, 0.2);
+
+  /* 渐变 */
+  --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --gradient-bg: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+
+  /* 阴影 */
+  --shadow-glow-sm: 0 0 10px rgba(99, 102, 241, 0.3);
+  --shadow-glow-md: 0 0 20px rgba(99, 102, 241, 0.4);
+  --shadow-glow-lg: 0 0 40px rgba(99, 102, 241, 0.5);
+  --shadow-glow-xl: 0 0 60px rgba(99, 102, 241, 0.6);
+
+  /* 协作模式颜色 */
+  --mode-war-room: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(249, 115, 22, 0.15) 100%);
+  --mode-chat-room: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(14, 165, 233, 0.15) 100%);
+  --mode-panel: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(168, 85, 247, 0.15) 100%);
+  --mode-standalone: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(6, 182, 212, 0.15) 100%);
+
+  /* Avatar 渐变 */
+  --avatar-gradient-1: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --avatar-gradient-2: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+  --avatar-gradient-3: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+  --avatar-gradient-4: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  --avatar-gradient-ai: linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #d946ef 100%);
+}
+
+/* 全局样式 */
+body {
+  background: var(--gradient-bg);
+  color: var(--text-primary);
+}
+
+/* 玻璃态面板 */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+}
+
+/* 发光边框 */
+.glow-border {
+  position: relative;
+}
+
+.glow-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--gradient-primary);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* 悬浮装饰 */
+.floating-shape {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* 按钮样式 */
+.btn-primary {
+  background: var(--gradient-primary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.5);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-glass);
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--border-glass-light);
+}
+
+/* 输入框样式 */
+.input-field {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-glass);
+  transition: all 0.3s ease;
+}
+
+.input-field:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--border-primary-light);
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+}
+
+/* 角色卡样式 */
+.character-card {
+  background: var(--gradient-glass);
+  border: 1px solid var(--border-glass);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.character-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-primary);
+  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.2);
+}
+
+/* 模式卡片 */
+.mode-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mode-card:hover {
+  transform: translateY(-8px) scale(1.02);
+}
+
+.mode-war-room {
+  background: var(--mode-war-room);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.mode-war-room:hover, .mode-war-room.selected {
+  border-color: rgba(239, 68, 68, 0.6);
+  box-shadow: 0 20px 60px rgba(239, 68, 68, 0.3);
+}
+
+.mode-chat-room {
+  background: var(--mode-chat-room);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.mode-chat-room:hover, .mode-chat-room.selected {
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 20px 60px rgba(59, 130, 246, 0.3);
+}
+
+.mode-panel {
+  background: var(--mode-panel);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.mode-panel:hover, .mode-panel.selected {
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 20px 60px rgba(139, 92, 246, 0.3);
+}
+
+.mode-standalone {
+  background: var(--mode-standalone);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.mode-standalone:hover, .mode-standalone.selected {
+  border-color: rgba(16, 185, 129, 0.6);
+  box-shadow: 0 20px 60px rgba(16, 185, 129, 0.3);
+}
+
+/* 滚动条样式 */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* 标签样式 */
+.tag-expertise {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.15) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #a5b4fc;
+}
+
+.tag-role {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(6, 182, 212, 0.15) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #6ee7b7;
+}
+
+.tag-skill {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(239, 68, 68, 0.15) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #fcd34d;
+}
+
+/* 上下文层级 */
+.context-layer {
+  transition: all 0.2s ease;
+}
+
+.context-layer:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* 聊天室列表项 */
+.chat-room-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chat-room-card:hover {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.3);
+  transform: translateX(4px);
+}
+
+.chat-room-card.active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.15) 100%);
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.2);
+}
+
+/* 机器人卡片 */
+.robot-card {
+  transition: all 0.3s ease;
+}
+
+.robot-card:hover {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.4);
+  transform: scale(1.02);
+}
+
+/* 成员卡片 */
+.member-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ===================================
+   消息气泡样式
+   =================================== */
+
+/* 用户消息气泡 */
+.message-bubble-user {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+}
+
+/* AI 消息气泡 */
+.message-bubble-ai {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);
+}
+
+/* 其他消息气泡 */
+.message-bubble-other {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 代码块样式 */
+.code-block {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  font-family: 'Fira Code', 'JetBrains Mono', monospace;
+  overflow-x: auto;
+}
+
+/* 输入框渐变背景 */
+.input-gradient {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%);
+}
+
+.input-gradient:focus-within {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 0 30px rgba(99, 102, 241, 0.2);
+}
+
+/* 模式徽章 */
+.mode-badge-war {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(249, 115, 22, 0.15) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+.mode-badge-chat {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(14, 165, 233, 0.15) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #93c5fd;
+}
+
+.mode-badge-panel {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(168, 85, 247, 0.15) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  color: #c4b5fd;
+}
+
+.mode-badge-standalone {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(6, 182, 212, 0.15) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #6ee7b7;
+}
+
+/* Avatar 渐变类 */
+.avatar-gradient-1 { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); }
+.avatar-gradient-2 { background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%); }
+.avatar-gradient-3 { background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%); }
+.avatar-gradient-4 { background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); }
+.avatar-gradient-ai { background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #d946ef 100%); }

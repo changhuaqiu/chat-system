@@ -8,6 +8,11 @@ import ChatArea from '../components/Chat/ChatArea';
 import MemberSidebar from '../components/Chat/MemberSidebar';
 import InviteModal from '../components/Chat/InviteModal';
 import WorldInfoManager from '../components/WorldInfo/WorldInfoManager';
+// 协作模式视图组件
+import WarRoomView from '../components/Collaboration/WarRoomView';
+import ChatRoomView from '../components/Collaboration/ChatRoomView';
+import PanelView from '../components/Collaboration/PanelView';
+import StandaloneView from '../components/Collaboration/StandaloneView';
 
 function ChatPage() {
   const navigate = useNavigate();
@@ -19,6 +24,7 @@ function ChatPage() {
   const [agentList, setAgentList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentRoomInfo, setCurrentRoomInfo] = useState({});
+  const [collaborationMode, setCollaborationMode] = useState('chat-room'); // 协作模式
 
   // UI State
   const [input, setInput] = useState('');
@@ -254,6 +260,165 @@ function ChatPage() {
   const handleInvite = useCallback(() => setShowInviteModal(true), []);
   const handleManageWorldInfo = useCallback(() => setShowWorldInfoModal(true), []);
 
+  // 根据协作模式渲染不同视图
+  const renderCollaborationView = () => {
+    const viewProps = {
+      roomInfo: currentRoomInfo,
+      members: members
+    };
+
+    switch (collaborationMode) {
+      case 'war-room':
+        return (
+          <WarRoomView {...viewProps}>
+            <ChatArea
+              roomInfo={currentRoomInfo}
+              messages={messages}
+              currentUser="user"
+              input={input}
+              setInput={setInput}
+              onSendMessage={handleSendMessage}
+              onTyping={handleTyping}
+              typingUsers={typingUsers}
+              typingAgents={typingAgents}
+              agentList={agentList}
+              showEmojiPicker={showEmojiPicker}
+              setShowEmojiPicker={setShowEmojiPicker}
+              showImagePicker={showImagePicker}
+              setShowImagePicker={setShowImagePicker}
+              fileInputRef={fileInputRef}
+              handleImageUpload={handleImageUpload}
+              emojiList={emojiList}
+              handleEmojiSelect={handleEmojiSelect}
+              uploadedImages={uploadedImages}
+              handleImageSelect={handleImageSelect}
+              replyingTo={replyingTo}
+              setReplyingTo={setReplyingTo}
+              inputRef={inputRef}
+            />
+          </WarRoomView>
+        );
+      case 'chat-room':
+        return (
+          <ChatRoomView {...viewProps}>
+            <ChatArea
+              roomInfo={currentRoomInfo}
+              messages={messages}
+              currentUser="user"
+              input={input}
+              setInput={setInput}
+              onSendMessage={handleSendMessage}
+              onTyping={handleTyping}
+              typingUsers={typingUsers}
+              typingAgents={typingAgents}
+              agentList={agentList}
+              showEmojiPicker={showEmojiPicker}
+              setShowEmojiPicker={setShowEmojiPicker}
+              showImagePicker={showImagePicker}
+              setShowImagePicker={setShowImagePicker}
+              fileInputRef={fileInputRef}
+              handleImageUpload={handleImageUpload}
+              emojiList={emojiList}
+              handleEmojiSelect={handleEmojiSelect}
+              uploadedImages={uploadedImages}
+              handleImageSelect={handleImageSelect}
+              replyingTo={replyingTo}
+              setReplyingTo={setReplyingTo}
+              inputRef={inputRef}
+            />
+          </ChatRoomView>
+        );
+      case 'panel':
+        return (
+          <PanelView {...viewProps}>
+            <ChatArea
+              roomInfo={currentRoomInfo}
+              messages={messages}
+              currentUser="user"
+              input={input}
+              setInput={setInput}
+              onSendMessage={handleSendMessage}
+              onTyping={handleTyping}
+              typingUsers={typingUsers}
+              typingAgents={typingAgents}
+              agentList={agentList}
+              showEmojiPicker={showEmojiPicker}
+              setShowEmojiPicker={setShowEmojiPicker}
+              showImagePicker={showImagePicker}
+              setShowImagePicker={setShowImagePicker}
+              fileInputRef={fileInputRef}
+              handleImageUpload={handleImageUpload}
+              emojiList={emojiList}
+              handleEmojiSelect={handleEmojiSelect}
+              uploadedImages={uploadedImages}
+              handleImageSelect={handleImageSelect}
+              replyingTo={replyingTo}
+              setReplyingTo={setReplyingTo}
+              inputRef={inputRef}
+            />
+          </PanelView>
+        );
+      case 'standalone':
+        return (
+          <StandaloneView {...viewProps}>
+            <ChatArea
+              roomInfo={currentRoomInfo}
+              messages={messages}
+              currentUser="user"
+              input={input}
+              setInput={setInput}
+              onSendMessage={handleSendMessage}
+              onTyping={handleTyping}
+              typingUsers={typingUsers}
+              typingAgents={typingAgents}
+              agentList={agentList}
+              showEmojiPicker={showEmojiPicker}
+              setShowEmojiPicker={setShowEmojiPicker}
+              showImagePicker={showImagePicker}
+              setShowImagePicker={setShowImagePicker}
+              fileInputRef={fileInputRef}
+              handleImageUpload={handleImageUpload}
+              emojiList={emojiList}
+              handleEmojiSelect={handleEmojiSelect}
+              uploadedImages={uploadedImages}
+              handleImageSelect={handleImageSelect}
+              replyingTo={replyingTo}
+              setReplyingTo={setReplyingTo}
+              inputRef={inputRef}
+            />
+          </StandaloneView>
+        );
+      default:
+        return (
+          <ChatArea
+            roomInfo={currentRoomInfo}
+            messages={messages}
+            currentUser="user"
+            input={input}
+            setInput={setInput}
+            onSendMessage={handleSendMessage}
+            onTyping={handleTyping}
+            typingUsers={typingUsers}
+            typingAgents={typingAgents}
+            agentList={agentList}
+            showEmojiPicker={showEmojiPicker}
+            setShowEmojiPicker={setShowEmojiPicker}
+            showImagePicker={showImagePicker}
+            setShowImagePicker={setShowImagePicker}
+            fileInputRef={fileInputRef}
+            handleImageUpload={handleImageUpload}
+            emojiList={emojiList}
+            handleEmojiSelect={handleEmojiSelect}
+            uploadedImages={uploadedImages}
+            handleImageSelect={handleImageSelect}
+            replyingTo={replyingTo}
+            setReplyingTo={setReplyingTo}
+            inputRef={inputRef}
+          />
+        );
+    }
+  };
+
   // Conditional render - MUST be after all hooks
   if (loading) {
       return (
@@ -267,7 +432,7 @@ function ChatPage() {
 
   return (
     <Layout>
-        <div className="flex h-full bg-white overflow-hidden">
+        <div className="flex h-full bg-gradient-bg overflow-hidden">
             <ChatSidebar
                 rooms={rooms}
                 currentRoomId={roomId || 'general'}
@@ -275,31 +440,8 @@ function ChatPage() {
                 onCreateRoom={handleCreateRoom}
             />
 
-            <ChatArea
-                roomInfo={currentRoomInfo}
-                messages={messages}
-                currentUser="user"
-                input={input}
-                setInput={setInput}
-                onSendMessage={handleSendMessage}
-                onTyping={handleTyping}
-                typingUsers={typingUsers}
-                typingAgents={typingAgents}
-                agentList={agentList}
-                showEmojiPicker={showEmojiPicker}
-                setShowEmojiPicker={setShowEmojiPicker}
-                showImagePicker={showImagePicker}
-                setShowImagePicker={setShowImagePicker}
-                fileInputRef={fileInputRef}
-                handleImageUpload={handleImageUpload}
-                emojiList={emojiList}
-                handleEmojiSelect={handleEmojiSelect}
-                uploadedImages={uploadedImages}
-                handleImageSelect={handleImageSelect}
-                replyingTo={replyingTo}
-                setReplyingTo={setReplyingTo}
-                inputRef={inputRef}
-            />
+            {/* 根据协作模式渲染不同视图 */}
+            {renderCollaborationView()}
 
             <MemberSidebar
                 members={members}

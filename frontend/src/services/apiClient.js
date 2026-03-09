@@ -1,20 +1,18 @@
 /**
- * API Client - 统一 HTTP 客户端封装
- *
+ * API Client - 统一封装 axios
+ * 
  * 功能:
- * - 基于 axios.create 创建实例
- * - 统一 baseURL 和超时配置
- * - 响应拦截器处理错误
- * - 请求拦截器支持认证
+ * 1. 统一 baseURL 配置
+ * 2. 请求/响应拦截
+ * 3. 统一错误处理
+ * 4. 自动添加认证头
  */
 
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
-
 // 创建 axios 实例
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json'
@@ -24,15 +22,15 @@ const apiClient = axios.create({
 // 请求拦截器
 apiClient.interceptors.request.use(
   (config) => {
-    // 可在此添加认证 token
-    const token = localStorage.getItem('apiToken');
+    // 可以在这里添加认证 token
+    const token = localStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
   (error) => {
-    console.error('[API Client] Request error:', error);
+    console.error('Request error:', error);
     return Promise.reject(error);
   }
 );
@@ -40,47 +38,67 @@ apiClient.interceptors.request.use(
 // 响应拦截器
 apiClient.interceptors.response.use(
   (response) => {
-    // 直接返回 data，减少一层嵌套
+    // 解构返回 data
     return response.data;
   },
   (error) => {
+    console.error('API Error:', error.message);
+    
     // 统一错误处理
     if (error.response) {
-      // 服务器返回错误响应
-      const { status, data } = error.response;
-
-      switch (status) {
+      // 服务器响应错误
+      switch (error.response.status) {
         case 401:
-          console.error('[API Client] Unauthorized - 请检查认证信息');
-          // 可在此触发重新登录
+          console.error('Unauthorized - Please login');
           break;
         case 403:
-          console.error('[API Client] Forbidden - 权限不足');
+          console.error('Forbidden');
           break;
         case 404:
-          console.error('[API Client] Not Found - 资源不存在');
+          console.error('Resource not found');
           break;
         case 500:
-          console.error('[API Client] Internal Server Error - 服务器错误');
+          console.error('Server error');
           break;
         default:
-          console.error(`[API Client] Error ${status}:`, data?.message || error.message);
+          console.error(`Error: ${error.response.status}`);
       }
-
-      // 附加状态码到错误对象
-      error.status = status;
-      error.apiData = data;
     } else if (error.request) {
-      // 请求已发出但没有收到响应
-      console.error('[API Client] No response received - 请检查网络连接');
-      error.message = '网络连接失败，请检查服务器是否运行';
+      // 请求已发出但没有响应
+      console.error('No response from server');
     } else {
-      // 请求配置出错
-      console.error('[API Client] Request config error:', error.message);
+      // 设置请求时出错
+      console.error('Error setting up request:', error.message);
     }
-
+    
     return Promise.reject(error);
   }
 );
 
+// 导出实例
 export default apiClient;
+
+// 辅助函数
+export const apiGet = async (url, params = {}) => {
+  const response = await apiClient.get(url, { params });
+  return response;
+};
+
+export const apiPost = async (url, data = {}) => {
+  const response = await apiClient.post(url, data);
+  return response;
+};
+
+export const apiPut = async (url, data = {}) => {
+  const response = await apiClient.put(url, data);
+  return response;
+};
+
+export const apiDelete = async (url) => {
+  const response = await apiClient.delete(url);
+  return response;
+};
+
+// 导出默认配置
+export const API_BASE_URL = apiClient.defaults.baseURL;
+export const API_TIMEOUT = apiClient.defaults.timeout;

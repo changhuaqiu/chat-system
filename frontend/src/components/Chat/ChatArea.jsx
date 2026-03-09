@@ -1,5 +1,6 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import MessageBubble from '../Message/MessageBubble';
+import SmartMentionPicker from './SmartMentionPicker';
 
 const ChatArea = ({
   roomInfo,
@@ -90,10 +91,23 @@ const ChatArea = ({
       }
   };
 
-  const filteredAgents = agentList.filter(agent => 
-      agent.name.toLowerCase().includes(mentionQuery.toLowerCase()) || 
-      agent.id.toLowerCase().includes(mentionQuery.toLowerCase())
-  );
+  // 从最近消息中提取上下文关键词
+  const contextKeywords = useMemo(() => {
+    const recentMessages = messages.slice(-10);
+    const keywords = [];
+    const keywordPatterns = ['api', 'database', 'design', 'code', 'test', 'deploy', 'review'];
+
+    recentMessages.forEach((msg) => {
+      const content = msg.content?.toLowerCase() || '';
+      keywordPatterns.forEach((pattern) => {
+        if (content.includes(pattern) && !keywords.includes(pattern)) {
+          keywords.push(pattern);
+        }
+      });
+    });
+
+    return keywords;
+  }, [messages]);
 
   const selectMention = (agent) => {
       if (!agent) return;
@@ -125,66 +139,69 @@ const ChatArea = ({
   };
 
   return (
-    <div 
-        className="flex-1 flex flex-col bg-white h-full relative"
+    <div
+        className="flex-1 flex flex-col bg-gradient-bg h-full relative"
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
     >
       {/* Drag Overlay */}
       {isDragging && (
-          <div className="absolute inset-0 bg-blue-500/20 backdrop-blur-sm z-50 flex items-center justify-center border-4 border-blue-500 border-dashed m-4 rounded-2xl">
-              <div className="text-blue-600 font-bold text-xl bg-white/80 px-6 py-4 rounded-xl shadow-lg">
+          <div className="absolute inset-0 bg-purple-500/20 backdrop-blur-sm z-50 flex items-center justify-center border-4 border-purple-500 border-dashed m-4 rounded-2xl">
+              <div className="text-purple-300 font-bold text-xl bg-gray-900/80 px-6 py-4 rounded-xl shadow-lg">
                   释放以上传文件
               </div>
           </div>
       )}
 
-      {/* Header */}
-      <div className="border-b border-[#e5e5ea] px-6 py-4 bg-[#fafafa]">
+      {/* Header - 赛博风格 */}
+      <div className="glass-panel border-b border-white/5 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className={`w-12 h-12 ${roomInfo.color || 'bg-[#00c7be]'} rounded-xl flex items-center justify-center text-white text-lg shadow-sm`}>
-              {roomInfo.icon || '💬'}
+            <div className={`w-12 h-12 ${roomInfo.color || 'bg-gradient-to-br from-cyan-500 to-blue-500'} rounded-xl flex items-center justify-center text-white text-lg shadow-lg`}>
+              {roomInfo.icon || <i className="ri-chat-3-line" />}
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-[#1d1d1f]">{roomInfo.name}</h2>
+              <h2 className="text-lg font-semibold text-white">{roomInfo.name}</h2>
               <div className="flex items-center gap-2 mt-1">
                 {/* Member avatars preview */}
                 <div className="flex -space-x-1.5">
                    {/* Mock avatars */}
-                   <div className="w-6 h-6 bg-[#007aff] rounded-full border-2 border-white flex items-center justify-center text-[10px] text-white">A</div>
-                   <div className="w-6 h-6 bg-[#af52de] rounded-full border-2 border-white flex items-center justify-center text-[10px] text-white">AI</div>
+                   <div className="w-6 h-6 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full border-2 border-gray-900 flex items-center justify-center text-[10px] text-white">A</div>
+                   <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-violet-500 rounded-full border-2 border-gray-900 flex items-center justify-center text-[10px] text-white">AI</div>
                 </div>
-                <span className="text-sm text-[#8e8e93]">{roomInfo.memberCount || 2} 位成员</span>
+                <span className="text-sm text-white/40">{roomInfo.memberCount || 2} 位成员</span>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="p-2 hover:bg-[#f0f0f5] rounded-lg transition-colors" title="搜索消息">
-              <svg className="w-5 h-5 text-[#8e8e93]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <button className="p-2 hover:bg-white/10 rounded-xl transition-colors text-white/40 hover:text-white" title="搜索消息">
+              <i className="ri-search-line text-lg" />
             </button>
-            <button className="p-2 hover:bg-[#f0f0f5] rounded-lg transition-colors" title="通知设置">
-              <svg className="w-5 h-5 text-[#8e8e93]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+            <button className="p-2 hover:bg-white/10 rounded-xl transition-colors text-white/40 hover:text-white" title="通知设置">
+              <i className="ri-notification-3-line text-lg" />
             </button>
-            <button className="p-2 hover:bg-[#f0f0f5] rounded-lg transition-colors" title="更多选项">
-              <svg className="w-5 h-5 text-[#8e8e93]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path></svg>
+            <button className="p-2 hover:bg-white/10 rounded-xl transition-colors text-white/40 hover:text-white" title="更多选项">
+              <i className="ri-more-fill text-lg" />
             </button>
           </div>
         </div>
       </div>
       
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 bg-[#f5f5f7] space-y-5">
-        {/* Date Divider (Mock) */}
-        <div className="flex items-center justify-center">
-            <span className="text-xs text-[#8e8e93] bg-[#e5e5ea] px-3 py-1 rounded-full">今天 {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+      {/* Messages - 赛博风格 */}
+      <div className="flex-1 overflow-y-auto scrollbar-thin p-6">
+        {/* Date Divider */}
+        <div className="flex items-center justify-center mb-4">
+            <span className="text-xs text-white/30 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">
+              今天 {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+            </span>
         </div>
 
         {messages.map((msg, idx) => {
             const isOwn = msg.sender === currentUser;
             const senderInfo = agentList.find(a => a.id === msg.sender) || { name: msg.sender, id: msg.sender };
             const repliedMsg = msg.replyToId ? messages.find(m => m.id === msg.replyToId) : null;
+            const senderType = senderInfo.isBot ? 'ai' : 'user';
 
             return (
                 <MessageBubble
@@ -199,11 +216,12 @@ const ChatArea = ({
                         inputRef.current?.focus();
                     }}
                     repliedMessage={repliedMsg}
+                    senderType={senderType}
                 />
             );
         })}
 
-        {/* Typing Indicator - Shows detailed bot info */}
+        {/* Typing Indicator - 赛博风格 */}
         {typingAgents.length > 0 && (
              <div className="flex items-start space-x-3">
                 {typingAgents.map(agent => {
@@ -214,12 +232,12 @@ const ChatArea = ({
                     return (
                         <div
                             key={agent.id}
-                            className="flex items-center space-x-2 bg-white px-3 py-2 rounded-lg shadow-sm border border-gray-100"
+                            className="flex items-center space-x-2 bg-white/5 backdrop-blur-sm px-3 py-2 rounded-xl shadow-lg border border-white/10"
                         >
                             <div className={`w-6 h-6 ${displayColor} rounded-full flex items-center justify-center text-white text-xs flex-shrink-0`}>
                                 {displayAvatar}
                             </div>
-                            <span className="text-sm text-gray-600">{displayName} 正在输入...</span>
+                            <span className="text-sm text-white/70">{displayName} 正在输入...</span>
                         </div>
                     );
                 })}
@@ -245,28 +263,17 @@ const ChatArea = ({
         )}
 
         <div className="flex items-end gap-3 relative">
-            {/* Mention Suggestions Popup */}
-            {showMentionList && filteredAgents.length > 0 && (
-                <div className="absolute bottom-full left-12 mb-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-20">
-                    <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 border-b border-gray-100">
-                        提及成员
-                    </div>
-                    <div className="max-h-48 overflow-y-auto">
-                        {filteredAgents.map((agent, idx) => (
-                            <button
-                                key={agent.id}
-                                onClick={() => selectMention(agent)}
-                                className={`w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-blue-50 transition-colors ${idx === mentionIndex ? 'bg-blue-50' : ''}`}
-                            >
-                                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs ${agent.color || 'bg-blue-500'}`}>
-                                    {agent.name[0]}
-                                </div>
-                                <span className="text-sm text-gray-800">{agent.name}</span>
-                                <span className="text-xs text-gray-400 ml-auto">{agent.id}</span>
-                            </button>
-                        ))}
-                    </div>
-                </div>
+            {/* Mention Suggestions Popup - 智能 @提及 */}
+            {showMentionList && (
+                <SmartMentionPicker
+                    agents={agentList}
+                    query={mentionQuery}
+                    contextKeywords={contextKeywords}
+                    onSelect={(agent) => {
+                        selectMention(agent);
+                    }}
+                    onClose={() => setShowMentionList(false)}
+                />
             )}
 
             {/* Emoji & Attachment */}

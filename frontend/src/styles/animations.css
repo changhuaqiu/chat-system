@@ -1,0 +1,456 @@
+/* 赛博科技风动画库 */
+
+/* ===================================
+   发光动画
+   =================================== */
+
+/* 辉光脉冲 */
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(16, 185, 129, 0.8);
+  }
+}
+
+.glow-pulse {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+/* 霓虹闪烁 */
+@keyframes neonFlicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    text-shadow: 0 0 5px var(--neon-blue), 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue);
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+  }
+}
+
+.neon-flicker {
+  animation: neonFlicker 3s ease-in-out infinite;
+}
+
+/* 脉冲光环 */
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.pulse-ring {
+  animation: pulseRing 2s ease-out infinite;
+}
+
+/* 在线状态脉冲 */
+@keyframes onlinePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+.online-indicator {
+  animation: onlinePulse 2s ease-in-out infinite;
+}
+
+/* ===================================
+   输入/加载动画
+   =================================== */
+
+/* 打字动画 */
+@keyframes typingDot {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.typing-dot {
+  animation: typingDot 1.4s ease-in-out infinite;
+}
+
+.typing-dot:nth-child(1) { animation-delay: 0s; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* 骨架屏加载 */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* 边框流动 */
+@keyframes borderFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.border-flow {
+  background: linear-gradient(
+    90deg,
+    var(--border-primary),
+    var(--neon-purple),
+    var(--border-primary)
+  );
+  background-size: 200% 100%;
+  animation: borderFlow 3s ease-in-out infinite;
+}
+
+/* ===================================
+   过渡动画
+   =================================== */
+
+/* 淡入 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 淡入上浮 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+/* 淡入缩放 */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.fade-in-scale {
+  animation: fadeInScale 0.3s ease-out;
+}
+
+/* 滑入左侧 */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+/* 滑入右侧 */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* 弹出效果 */
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  70% {
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.pop-in {
+  animation: popIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 检查标记弹出 */
+@keyframes checkPop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.check-icon {
+  animation: checkPop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===================================
+   Avatar 动画
+   =================================== */
+
+/* Avatar 悬浮 */
+@keyframes avatarFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.avatar-float {
+  animation: avatarFloat 3s ease-in-out infinite;
+}
+
+/* Avatar 旋转 */
+@keyframes avatarSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.avatar-spin {
+  animation: avatarSpin 8s linear infinite;
+}
+
+/* ===================================
+   消息动画
+   =================================== */
+
+/* 消息进入 */
+@keyframes messageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-enter {
+  animation: messageEnter 0.3s ease-out;
+}
+
+/* 消息高亮 */
+@keyframes messageHighlight {
+  0%, 100% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(99, 102, 241, 0.2);
+  }
+}
+
+.message-highlight {
+  animation: messageHighlight 1s ease-out;
+}
+
+/* ===================================
+   数据流效果
+   =================================== */
+
+/* 数据流 */
+@keyframes dataStream {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.data-stream {
+  position: relative;
+  overflow: hidden;
+}
+
+.data-stream::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(99, 102, 241, 0.1) 50%,
+    transparent 100%
+  );
+  animation: dataStream 2s linear infinite;
+}
+
+/* 扫描线效果 */
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.scanline {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanline::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--neon-blue) 50%,
+    transparent 100%
+  );
+  animation: scanline 3s linear infinite;
+}
+
+/* ===================================
+   HUD 元素动画
+   =================================== */
+
+/* HUD 边框 */
+@keyframes hudBorder {
+  0%, 100% {
+    border-color: rgba(99, 102, 241, 0.3);
+  }
+  50% {
+    border-color: rgba(99, 102, 241, 0.8);
+  }
+}
+
+.hud-border {
+  animation: hudBorder 2s ease-in-out infinite;
+}
+
+/* 角落装饰 */
+@keyframes cornerPulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.corner-pulse {
+  animation: cornerPulse 2s ease-in-out infinite;
+}
+
+/* ===================================
+   工具类
+   =================================== */
+
+/* 延迟类 */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+
+/* 持续类 */
+.duration-fast { animation-duration: 0.2s; }
+.duration-normal { animation-duration: 0.4s; }
+.duration-slow { animation-duration: 0.8s; }
+
+/* 缓动类 */
+.ease-bounce { animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+.ease-smooth { animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1); }
+.ease-in-out { animation-timing-function: ease-in-out; }
+
+/* 无限循环 */
+.animation-infinite { animation-iteration-count: infinite; }
+
+/* 暂停动画 */
+.animation-paused { animation-play-state: paused; }
+
+/* 反向动画 */
+.animation-reverse { animation-direction: reverse; }
+
+/* 交替动画 */
+.animation-alternate { animation-direction: alternate; }
