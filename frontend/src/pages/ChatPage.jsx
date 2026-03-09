@@ -8,6 +8,7 @@ import ChatArea from '../components/Chat/ChatArea';
 import MemberSidebar from '../components/Chat/MemberSidebar';
 import InviteModal from '../components/Chat/InviteModal';
 import WorldInfoManager from '../components/WorldInfo/WorldInfoManager';
+import ContextHierarchy from '../components/Context/ContextHierarchy';
 // 协作模式视图组件
 import WarRoomView from '../components/Collaboration/WarRoomView';
 import ChatRoomView from '../components/Collaboration/ChatRoomView';

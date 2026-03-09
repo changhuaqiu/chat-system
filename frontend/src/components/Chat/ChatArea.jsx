@@ -25,10 +25,11 @@ const ChatArea = ({
   handleImageSelect,
   replyingTo,
   setReplyingTo,
-  inputRef
+  inputRef,
+  collaborationMode = 'chat-room'
 }) => {
   const messagesEndRef = useRef(null);
-  
+
   // Mention Logic
   const [showMentionList, setShowMentionList] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
@@ -36,6 +37,19 @@ const ChatArea = ({
 
   // Drag and Drop State
   const [isDragging, setIsDragging] = useState(false);
+
+  // 获取协作模式徽章样式
+  const getModeBadge = (mode) => {
+    const badges = {
+      'war-room': { className: 'mode-badge-war', icon: 'ri-sword-line', label: '作战室模式' },
+      'chat-room': { className: 'mode-badge-chat', icon: 'ri-chat-3-line', label: '聊天室模式' },
+      'panel': { className: 'mode-badge-panel', icon: 'ri-group-2-line', label: '专家会诊模式' },
+      'standalone': { className: 'mode-badge-standalone', icon: 'ri-user-3-line', label: '独立模式' }
+    };
+    return badges[mode] || badges['chat-room'];
+  };
+
+  const modeBadge = getModeBadge(collaborationMode);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -78,7 +92,6 @@ const ChatArea = ({
       const lastAt = value.lastIndexOf('@');
       if (lastAt !== -1) {
           const query = value.slice(lastAt + 1);
-          // Only show if @ is at start or preceded by space, and query has no spaces
           if ((lastAt === 0 || value[lastAt - 1] === ' ') && !query.includes(' ')) {
               setMentionQuery(query);
               setShowMentionList(true);
@@ -132,8 +145,6 @@ const ChatArea = ({
       setIsDragging(false);
       const files = e.dataTransfer.files;
       if (files && files.length > 0) {
-          // Pass to parent handler (assuming single file for now or handle list)
-          // Since handleImageUpload expects an event with target.files, we mock it
           handleImageUpload({ target: { files: files } });
       }
   };
@@ -162,11 +173,15 @@ const ChatArea = ({
               {roomInfo.icon || <i className="ri-chat-3-line" />}
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-white">{roomInfo.name}</h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-lg font-semibold text-white">{roomInfo.name}</h2>
+                <span className={`${modeBadge.className} px-2.5 py-0.5 rounded-full text-xs font-medium flex items-center gap-1`}>
+                  <i className={modeBadge.icon}></i>
+                  {modeBadge.label}
+                </span>
+              </div>
               <div className="flex items-center gap-2 mt-1">
-                {/* Member avatars preview */}
                 <div className="flex -space-x-1.5">
-                   {/* Mock avatars */}
                    <div className="w-6 h-6 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full border-2 border-gray-900 flex items-center justify-center text-[10px] text-white">A</div>
                    <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-violet-500 rounded-full border-2 border-gray-900 flex items-center justify-center text-[10px] text-white">AI</div>
                 </div>
@@ -187,7 +202,7 @@ const ChatArea = ({
           </div>
         </div>
       </div>
-      
+
       {/* Messages - 赛博风格 */}
       <div className="flex-1 overflow-y-auto scrollbar-thin p-6">
         {/* Date Divider */}
@@ -243,27 +258,27 @@ const ChatArea = ({
                 })}
              </div>
         )}
-        
+
         <div ref={messagesEndRef} />
       </div>
-      
-      {/* Input Area */}
-      <div className="border-t border-[#e5e5ea] p-4 bg-[#fafafa]">
+
+      {/* Input Area - 赛博风格 */}
+      <div className="glass-panel border-t border-white/5 p-6">
         {/* Replying Banner */}
         {replyingTo && (
-            <div className="mb-3 px-4 py-2 bg-white rounded-lg flex justify-between items-center border-l-4 border-[#007aff] shadow-sm animate-slide-up">
-                <div className="text-xs text-gray-600 truncate flex-1">
-                    <span className="font-bold mr-1 text-[#007aff]">回复 {replyingTo.sender}:</span>
+            <div className="mb-3 px-4 py-2 bg-white/5 rounded-xl flex justify-between items-center border-l-4 border-purple-500 shadow-sm animate-slide-up">
+                <div className="text-xs text-white/60 truncate flex-1">
+                    <span className="font-bold mr-1 text-purple-400">回复 {replyingTo.sender}:</span>
                     {replyingTo.content}
                 </div>
-                <button onClick={() => setReplyingTo(null)} className="text-gray-400 hover:text-gray-600 ml-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <button onClick={() => setReplyingTo(null)} className="text-white/40 hover:text-white/70 ml-2">
+                    <i className="ri-close-line"></i>
                 </button>
             </div>
         )}
 
         <div className="flex items-end gap-3 relative">
-            {/* Mention Suggestions Popup - 智能 @提及 */}
+            {/* Mention Suggestions Popup */}
             {showMentionList && (
                 <SmartMentionPicker
                     agents={agentList}
@@ -278,17 +293,17 @@ const ChatArea = ({
 
             {/* Emoji & Attachment */}
             <div className="relative">
-                <button 
+                <button
                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                    className="p-2.5 hover:bg-[#f0f0f5] rounded-xl transition-colors text-[#8e8e93] hover:text-[#1d1d1f]"
+                    className="p-2.5 hover:bg-white/10 rounded-xl transition-colors text-white/60 hover:text-white"
                 >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <i className="ri-emotion-line text-xl"></i>
                 </button>
                 {showEmojiPicker && (
-                    <div className="absolute bottom-full left-0 mb-2 w-72 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-10">
+                    <div className="absolute bottom-full left-0 mb-2 w-72 glass-panel rounded-xl shadow-lg border border-white/10 p-4 z-10">
                         <div className="grid grid-cols-8 gap-1 max-h-48 overflow-y-auto">
                             {emojiList.map((emoji, idx) => (
-                                <button key={idx} onClick={() => handleEmojiSelect(emoji)} className="text-xl hover:bg-gray-100 rounded p-1">{emoji}</button>
+                                <button key={idx} onClick={() => handleEmojiSelect(emoji)} className="text-xl hover:bg-white/10 rounded p-1 transition-colors">{emoji}</button>
                             ))}
                         </div>
                     </div>
@@ -296,46 +311,59 @@ const ChatArea = ({
             </div>
 
             <div className="relative">
-                <button 
+                <button
                     onClick={() => setShowImagePicker(!showImagePicker)}
-                    className="p-2.5 hover:bg-[#f0f0f5] rounded-xl transition-colors text-[#8e8e93] hover:text-[#1d1d1f]"
+                    className="p-2.5 hover:bg-white/10 rounded-xl transition-colors text-white/60 hover:text-white"
                 >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+                    <i className="ri-image-line text-xl"></i>
                 </button>
                 <input ref={fileInputRef} type="file" multiple onChange={handleImageUpload} className="hidden" />
                 {showImagePicker && (
-                    <div className="absolute bottom-full left-0 mb-2 w-72 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-10">
+                    <div className="absolute bottom-full left-0 mb-2 w-72 glass-panel rounded-xl shadow-lg border border-white/10 p-4 z-10">
                         <div className="mb-2 flex justify-between items-center">
-                            <span className="text-xs font-medium text-gray-500">上传文件/图片</span>
-                            <button onClick={() => fileInputRef.current?.click()} className="text-xs text-[#007aff]">选择文件</button>
+                            <span className="text-xs font-medium text-white/50">上传文件/图片</span>
+                            <button onClick={() => fileInputRef.current?.click()} className="text-xs text-purple-400 hover:text-purple-300">选择文件</button>
                         </div>
                         {uploadedImages.length > 0 ? (
                             <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
                                 {uploadedImages.map((img, idx) => (
-                                    <img key={idx} src={img.url} onClick={() => handleImageSelect(img.url)} className="w-full h-20 object-cover rounded cursor-pointer hover:opacity-80" />
+                                    <img key={idx} src={img.url} onClick={() => handleImageSelect(img.url)} className="w-full h-20 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity" />
                                 ))}
                             </div>
-                        ) : <div className="text-center text-gray-400 text-xs py-4">暂无文件</div>}
+                        ) : <div className="text-center text-white/30 text-xs py-4">暂无文件</div>}
                     </div>
                 )}
             </div>
 
             <div className="flex-1 relative">
-                <input 
-                    ref={inputRef}
-                    type="text" 
-                    placeholder="输入消息... (输入 @ 提及, / 输入指令)" 
-                    className="w-full bg-[#f0f0f5] border-0 rounded-2xl px-5 py-3.5 text-[#1d1d1f] placeholder-[#8e8e93] focus:ring-2 focus:ring-[#007aff] focus:bg-white transition-all outline-none"
-                    value={input}
-                    onChange={handleInputChange}
-                    onKeyPress={handleKeyPress}
-                />
+                <div className="input-gradient border border-white/10 rounded-2xl px-5 py-4 transition-all">
+                    <textarea
+                        ref={inputRef}
+                        placeholder="输入消息... (输入 @ 提及，/ 输入指令)"
+                        className="w-full bg-transparent border-0 text-white placeholder-white/30 focus:ring-0 focus:outline-none resize-none text-base leading-relaxed"
+                        value={input}
+                        onChange={handleInputChange}
+                        onKeyPress={handleKeyPress}
+                        rows="1"
+                    />
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
+                        <span className="text-xs text-white/30">按 Enter 发送</span>
+                        <div className="flex items-center gap-2">
+                            <button className="px-3 py-1.5 rounded-lg bg-white/5 text-white/50 hover:text-white/70 hover:bg-white/10 transition-all text-xs flex items-center gap-1">
+                                <i className="ri-magic-line"></i> AI 润色
+                            </button>
+                            <button className="px-3 py-1.5 rounded-lg bg-white/5 text-white/50 hover:text-white/70 hover:bg-white/10 transition-all text-xs flex items-center gap-1">
+                                <i className="ri-at-line"></i> 快速 @
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <button 
+            <button
                 onClick={onSendMessage}
-                className="p-3 bg-[#007aff] text-white rounded-xl hover:bg-[#0066cc] transition-all shadow-sm flex-shrink-0"
+                className="p-4 btn-primary text-white rounded-2xl shadow-lg flex-shrink-0"
             >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+                <i className="ri-send-plane-2-fill text-xl"></i>
             </button>
         </div>
       </div>

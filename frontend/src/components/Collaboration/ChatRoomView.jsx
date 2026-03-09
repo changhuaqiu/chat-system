@@ -1,4 +1,5 @@
 import React from 'react';
+import ContextHierarchy from '../Context/ContextHierarchy';
 
 /**
  * 聊天室模式视图
@@ -52,8 +53,16 @@ const ChatRoomView = ({ children, roomInfo, members }) => {
       </div>
 
       {/* 聊天内容区域 */}
-      <div className="flex-1 overflow-hidden">
-        {children}
+      <div className="flex-1 flex overflow-hidden gap-4 p-4">
+        {/* 主聊天区域 */}
+        <div className="flex-1 flex flex-col">
+          {children}
+        </div>
+
+        {/* 右侧上下文层级面板 */}
+        <div className="w-80 flex-shrink-0">
+          <ContextHierarchy currentLevel="room" />
+        </div>
       </div>
     </div>
   );

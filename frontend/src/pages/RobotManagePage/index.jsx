@@ -332,20 +332,27 @@ const RobotManagePage = () => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#f5f5f7] p-8 font-apple">
-      <header className="mb-8 flex justify-between items-end">
-        <div>
-          <h1 className="text-3xl font-bold text-[#1d1d1f] tracking-tight">机器人管理</h1>
-          <p className="text-[#86868b] mt-1">配置和监控您的 AI 工作机器人。</p>
-        </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="bg-[#007aff] hover:bg-[#0066cc] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center space-x-2"
-        >
-          <span className="text-lg">+</span>
-          <span>部署新机器人</span>
-        </button>
-      </header>
+    <div className="flex-1 overflow-y-auto p-8 relative">
+      {/* 背景装饰 */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="floating-shape w-96 h-96 bg-purple-500 top-0 left-0 -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="floating-shape w-80 h-80 bg-blue-500 top-1/2 right-0 translate-x-1/3"></div>
+      </div>
+
+      <div className="relative z-10">
+        <header className="mb-8 flex justify-between items-end">
+          <div>
+            <h1 className="text-3xl font-bold text-white tracking-tight">机器人管理</h1>
+            <p className="text-white/40 mt-1">配置和监控您的 AI 工作机器人。</p>
+          </div>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="btn-primary text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-lg flex items-center space-x-2"
+          >
+            <span className="text-lg">+</span>
+            <span>部署新机器人</span>
+          </button>
+        </header>
 
       <RobotStats stats={stats} />
       <OneApiStatusBar oneApiStatus={oneApiStatus} />
@@ -368,16 +375,16 @@ const RobotManagePage = () => {
             />
           ))}
           {filteredRobots.length === 0 && (
-            <div className="col-span-full flex flex-col items-center justify-center p-16 bg-white rounded-2xl border border-dashed border-[#d2d2d7]">
+            <div className="col-span-full flex flex-col items-center justify-center p-16 glass-panel rounded-2xl border border-dashed border-white/20">
               <div className="text-4xl mb-4">🤖</div>
-              <h3 className="text-lg font-medium text-[#1d1d1f]">未找到机器人</h3>
-              <p className="text-[#86868b] mt-1 mb-6">
+              <h3 className="text-lg font-medium text-white">未找到机器人</h3>
+              <p className="text-white/40 mt-1 mb-6">
                 {searchQuery || filter !== 'all' ? '尝试调整筛选条件' : '部署您的第一个 AI 工作机器人以开始处理任务'}
               </p>
               {!searchQuery && filter === 'all' && (
                 <button
                   onClick={() => setShowCreateModal(true)}
-                  className="bg-[#007aff] hover:bg-[#0066cc] text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
+                  className="bg-[#007aff] hover:bg-[#0066cc] text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-lg"
                 >
                   部署机器人
                 </button>
@@ -449,6 +456,7 @@ const RobotManagePage = () => {
           setChannelModels={setChannelModels}
         />
       )}
+      </div>
     </div>
   );
 };
