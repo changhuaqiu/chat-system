@@ -23,9 +23,9 @@ export class WorldInfoManager {
    * Get World Info entries for a room, filtered by keywords
    * @param {string} roomId - Room ID
    * @param {string} context - Message content for keyword matching
-   * @returns {Promise<WorldInfoEntry[]>}
+   * @returns {WorldInfoEntry[]}
    */
-  async getEntries(roomId, context = '') {
+  getEntries(roomId, context = '') {
     const cacheKey = `${roomId}:${context}`;
     const cached = this.cache.get(cacheKey);
 
@@ -33,70 +33,60 @@ export class WorldInfoManager {
       return cached.entries;
     }
 
-    return new Promise((resolve, reject) => {
-      // Get all enabled entries for this room
-      db.all(
-        `SELECT * FROM world_info
-         WHERE room_id = ? AND enabled = 1
-         ORDER BY priority DESC, "order" ASC`,
-        [roomId],
-        async (err, rows) => {
-          if (err) {
-            reject(err);
-            return;
-          }
+    // Get all enabled entries for this room
+    const rows = db.prepare(
+      `SELECT * FROM world_info
+       WHERE room_id = ? AND enabled = 1
+       ORDER BY priority DESC, "order" ASC`
+    ).all(roomId);
 
-          if (!rows || rows.length === 0) {
-            resolve([]);
-            return;
-          }
+    if (!rows || rows.length === 0) {
+      return [];
+    }
 
-          // Parse keys and match against context
-          const matched = [];
+    // Parse keys and match against context
+    const matched = [];
 
-          for (const row of rows) {
-            let keys = [];
-            try {
-              keys = row.keys ? JSON.parse(row.keys) : [];
-            } catch (e) {
-              // If keys is a comma-separated string, split it
-              keys = row.keys ? row.keys.split(',').map(k => k.trim()) : [];
-            }
+    for (const row of rows) {
+      let keys = [];
+      try {
+        keys = row.keys ? JSON.parse(row.keys) : [];
+      } catch (e) {
+        // If keys is a comma-separated string, split it
+        keys = row.keys ? row.keys.split(',').map(k => k.trim()) : [];
+      }
 
-            // Check if sticky or matches keywords
-            const isSticky = row.sticky === 1 || row.sticky === true;
-            const hasMatch = keys.some(key =>
-              context.toLowerCase().includes(key.toLowerCase())
-            );
-
-            if (isSticky || hasMatch) {
-              matched.push({
-                id: row.id,
-                roomId: row.room_id,
-                name: row.name,
-                keys,
-                content: row.content,
-                priority: row.priority,
-                enabled: true,
-                sticky: isSticky,
-                order: row.order
-              });
-            }
-          }
-
-          // Sort by priority (high first), then by order
-          matched.sort((a, b) => b.priority - a.priority || a.order - b.order);
-
-          // Cache the result
-          this.cache.set(cacheKey, {
-            entries: matched,
-            timestamp: Date.now()
-          });
-
-          resolve(matched);
-        }
+      // Check if sticky or matches keywords
+      const isSticky = row.sticky === 1 || row.sticky === true;
+      const hasMatch = keys.some(key =>
+        context.toLowerCase().includes(key.toLowerCase())
       );
+
+      if (isSticky || hasMatch) {
+        matched.push({
+          id: row.id,
+          roomId: row.room_id,
+          name: row.name,
+          keys,
+          content: row.content,
+          priority: row.priority,
+          enabled: true,
+          sticky: isSticky,
+          order: row.order
+        });
+      }
+    }
+
+    // Sort by priority (high first), then by order
+    matched.sort((a, b) => b.priority - a.priority || a.order - b.order);
+
+    // Cache the result
+    this.cache.set(cacheKey, {
+      entries: matched,
+      timestamp: Date.now()
     });
+
+    return matched;
   }
 
   /**
@@ -135,10 +125,10 @@ export class WorldInfoManager {
    * Get World Info content as a string (for prompt injection)
    * @param {string} roomId - Room ID
    * @param {string} context - Message content for keyword matching
-   * @returns {Promise<string>}
+   * @returns {string}
    */
-  async getInjectedContent(roomId, context = '') {
-    const entries = await this.getEntries(roomId, context);
+  getInjectedContent(roomId, context = '') {
+    const entries = this.getEntries(roomId, context);
     return this.formatEntries(entries);
   }
 
@@ -159,131 +149,96 @@ export class WorldInfoManager {
   /**
    * Create a new World Info entry
    * @param {Object} entry - Entry data
-   * @returns {Promise<string>} - Created entry ID
+   * @returns {string} - Created entry ID
    */
-  async create(entry) {
+  create(entry) {
     const id = entry.id || `wi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const keys = Array.isArray(entry.keys) ? JSON.stringify(entry.keys) : entry.keys;
 
-    return new Promise((resolve, reject) => {
-      db.run(
-        `INSERT INTO world_info (id, room_id, name, keys, content, priority, enabled, sticky, "order")
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          id,
-          entry.roomId,
-          entry.name,
-          keys,
-          entry.content,
-          entry.priority || 0,
-          entry.enabled !== false ? 1 : 0,
-          entry.sticky ? 1 : 0,
-          entry.order || 0
-        ],
-        (err) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(id);
-        }
-      );
-    });
+    db.prepare(
+      `INSERT INTO world_info (id, room_id, name, keys, content, priority, enabled, sticky, "order")
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).run(
+      id,
+      entry.roomId,
+      entry.name,
+      keys,
+      entry.content,
+      entry.priority || 0,
+      entry.enabled !== false ? 1 : 0,
+      entry.sticky ? 1 : 0,
+      entry.order || 0
+    );
+
+    return id;
   }
 
   /**
    * Update an existing World Info entry
    * @param {string} id - Entry ID
    * @param {Object} entry - Updated entry data
-   * @returns {Promise<void>}
+   * @returns {void}
    */
-  async update(id, entry) {
+  update(id, entry) {
     const keys = Array.isArray(entry.keys) ? JSON.stringify(entry.keys) : entry.keys;
 
-    return new Promise((resolve, reject) => {
-      db.run(
-        `UPDATE world_info
-         SET room_id = ?, name = ?, keys = ?, content = ?,
-             priority = ?, enabled = ?, sticky = ?, "order" = ?,
-             updated_at = CURRENT_TIMESTAMP
-         WHERE id = ?`,
-        [
-          entry.roomId,
-          entry.name,
-          keys,
-          entry.content,
-          entry.priority || 0,
-          entry.enabled !== false ? 1 : 0,
-          entry.sticky ? 1 : 0,
-          entry.order || 0,
-          id
-        ],
-        (err) => {
-          if (err) {
-            reject(err);
-            return;
-          }
+    db.prepare(
+      `UPDATE world_info
+       SET room_id = ?, name = ?, keys = ?, content = ?,
+           priority = ?, enabled = ?, sticky = ?, "order" = ?,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?`
+    ).run(
+      entry.roomId,
+      entry.name,
+      keys,
+      entry.content,
+      entry.priority || 0,
+      entry.enabled !== false ? 1 : 0,
+      entry.sticky ? 1 : 0,
+      entry.order || 0,
+      id
+    );
 
-          // Invalidate cache
-          this.cache.clear();
-          resolve();
-        }
-      );
-    });
+    // Invalidate cache
+    this.cache.clear();
   }
 
   /**
    * Delete a World Info entry
    * @param {string} id - Entry ID
-   * @returns {Promise<void>}
+   * @returns {void}
    */
-  async delete(id) {
-    return new Promise((resolve, reject) => {
-      db.run('DELETE FROM world_info WHERE id = ?', [id], (err) => {
-        if (err) {
-          reject(err);
-          return;
-        }
+  delete(id) {
+    db.prepare('DELETE FROM world_info WHERE id = ?').run(id);
 
-        // Invalidate cache
-        this.cache.clear();
-        resolve();
-      });
-    });
+    // Invalidate cache
+    this.cache.clear();
   }
 
   /**
    * Get all entries for a room (admin function)
    * @param {string} roomId - Room ID
-   * @returns {Promise<WorldInfoEntry[]>}
+   * @returns {WorldInfoEntry[]}
    */
-  async getAllForRoom(roomId) {
-    return new Promise((resolve, reject) => {
-      db.all(
-        'SELECT * FROM world_info WHERE room_id = ? ORDER BY priority DESC, "order" ASC',
-        [roomId],
-        (err, rows) => {
-          if (err) {
-            reject(err);
-            return;
-          }
+  getAllForRoom(roomId) {
+    const rows = db.prepare(
+      'SELECT * FROM world_info WHERE room_id = ? ORDER BY priority DESC, "order" ASC'
+    ).all(roomId);
 
-          const entries = rows.map(row => ({
-            id: row.id,
-            roomId: row.room_id,
-            name: row.name,
-            keys: row.keys ? JSON.parse(row.keys) : [],
-            content: row.content,
-            priority: row.priority,
-            enabled: row.enabled === 1,
-            sticky: row.sticky === 1,
-            order: row.order
-          }));
+    const entries = rows.map(row => ({
+      id: row.id,
+      roomId: row.room_id,
+      name: row.name,
+      keys: row.keys ? JSON.parse(row.keys) : [],
+      content: row.content,
+      priority: row.priority,
+      enabled: row.enabled === 1,
+      sticky: row.sticky === 1,
+      order: row.order
+    }));
 
-          resolve(entries);
-        }
-      );
-    });
+    return entries;
   }
 
   /**

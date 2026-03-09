@@ -190,29 +190,21 @@ export class BotRuntime {
   /**
    * Get formatted agent registry for system prompt
    */
-  async getAgentRegistry(excludeBotId) {
-    return new Promise((resolve, reject) => {
-      db.all("SELECT id, name, description, capabilities FROM bots WHERE status = 'online'", (err, rows) => {
-        if (err) {
-            console.error("Failed to fetch agent registry", err);
-            resolve("");
-            return;
-        }
+  getAgentRegistry(excludeBotId) {
+    const rows = db.prepare("SELECT id, name, description, capabilities FROM bots WHERE status = 'online'").all();
 
-        const agents = rows.filter(b => b.id !== excludeBotId).map(b => {
-            let caps = b.capabilities;
-            try {
-                if (caps && typeof caps === 'string') caps = JSON.parse(caps);
-            } catch (e) {}
+    const agents = rows.filter(b => b.id !== excludeBotId).map(b => {
+        let caps = b.capabilities;
+        try {
+            if (caps && typeof caps === 'string') caps = JSON.parse(caps);
+        } catch (e) {}
 
-            return `- @${b.id} (${b.name}): ${b.description || 'No description'} [Capabilities: ${Array.isArray(caps) ? caps.join(', ') : (caps || 'None')}]`;
-        });
-
-        if (agents.length === 0) return resolve("You are the only agent in this room.");
-
-        resolve(`You are in a chatroom with other agents. You can ask them for help by explicitly mentioning them (e.g. "@agent_id").\nAvailable Agents:\n${agents.join('\n')}`);
-      });
+        return `- @${b.id} (${b.name}): ${b.description || 'No description'} [Capabilities: ${Array.isArray(caps) ? caps.join(', ') : (caps || 'None')}]`;
     });
+
+    if (agents.length === 0) return "You are the only agent in this room.";
+
+    return `You are in a chatroom with other agents. You can ask them for help by explicitly mentioning them (e.g. "@agent_id").\nAvailable Agents:\n${agents.join('\n')}`;
   }
 
   /**
@@ -235,14 +227,14 @@ export class BotRuntime {
       let worldInfo = '';
       if (options.roomId) {
         const lastMessage = conversationHistory[conversationHistory.length - 1]?.content || '';
-        const worldInfoContent = await worldInfoManager.getInjectedContent(options.roomId, lastMessage);
+        const worldInfoContent = worldInfoManager.getInjectedContent(options.roomId, lastMessage);
         if (worldInfoContent) {
           worldInfo = `[World Info]\n${worldInfoContent}`;
         }
       }
 
       // 3. Get Agent Registry
-      const registryPrompt = await this.getAgentRegistry(botId);
+      const registryPrompt = this.getAgentRegistry(botId);
 
       // 4. Build complete system prompt
       const systemPrompt = await this.buildSystemPrompt(botId, card, worldInfo, registryPrompt);

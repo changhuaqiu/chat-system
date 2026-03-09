@@ -7,24 +7,14 @@ export const loggerService = {
    * @param {string} agentId - Source of the log (e.g., system, frontend, bot-1)
    * @param {string} message - Log message
    * @param {object} details - Additional details (will be JSON stringified)
-   * @returns {Promise<number>} - ID of the inserted log
+   * @returns {number} - ID of the inserted log
    */
   log: (level, agentId, message, details = {}) => {
-    return new Promise((resolve, reject) => {
-      const timestamp = new Date().toISOString();
-      db.run(
-        'INSERT INTO system_logs (level, agent_id, message, details, timestamp) VALUES (?, ?, ?, ?, ?)',
-        [level, agentId, message, JSON.stringify(details), timestamp],
-        function(err) {
-          if (err) {
-            console.error('Failed to write to system_logs:', err);
-            reject(err);
-          } else {
-            resolve(this.lastID);
-          }
-        }
-      );
-    });
+    const timestamp = new Date().toISOString();
+    const result = db.prepare(
+      'INSERT INTO system_logs (level, agent_id, message, details, timestamp) VALUES (?, ?, ?, ?, ?)'
+    ).run(level, agentId, message, JSON.stringify(details), timestamp);
+    return result.lastInsertRowid;
   },
 
   info: (agentId, message, details) => loggerService.log('info', agentId, message, details),

@@ -7,67 +7,34 @@
 
 import { db } from '../src/db.js';
 
-export async function up() {
-  return new Promise((resolve, reject) => {
-    db.serialize(() => {
-      // Create world_info table
-      db.run(`
-        CREATE TABLE IF NOT EXISTS world_info (
-          id TEXT PRIMARY KEY,
-          room_id TEXT NOT NULL,
-          name TEXT NOT NULL,
-          keys TEXT,              -- JSON array of trigger keywords
-          content TEXT NOT NULL,
-          priority INTEGER DEFAULT 0,
-          enabled INTEGER DEFAULT 1,
-          sticky INTEGER DEFAULT 0,  -- Always inject if true
-          "order" INTEGER DEFAULT 0,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-      `, (err) => {
-        if (err) {
-          reject(err);
-          return;
-        }
+export function up() {
+  // Create world_info table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS world_info (
+      id TEXT PRIMARY KEY,
+      room_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      keys TEXT,
+      content TEXT NOT NULL,
+      priority INTEGER DEFAULT 0,
+      enabled INTEGER DEFAULT 1,
+      sticky INTEGER DEFAULT 0,
+      "order" INTEGER DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 
-        // Create indexes for faster lookups
-        db.run(`
-          CREATE INDEX IF NOT EXISTS idx_world_info_room_id ON world_info(room_id)
-        `, (err) => {
-          if (err) {
-            reject(err);
-            return;
-          }
+  // Create indexes for faster lookups
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_world_info_room_id ON world_info(room_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_world_info_enabled ON world_info(enabled)`);
 
-          db.run(`
-            CREATE INDEX IF NOT EXISTS idx_world_info_enabled ON world_info(enabled)
-          `, (err) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-
-            console.log('[Migration 005] Successfully created world_info table');
-            resolve();
-          });
-        });
-      });
-    });
-  });
+  console.log('[Migration 005] Successfully created world_info table');
 }
 
-export async function down() {
-  return new Promise((resolve, reject) => {
-    db.run(`DROP TABLE IF EXISTS world_info`, (err) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      console.log('[Migration 005] Successfully dropped world_info table');
-      resolve();
-    });
-  });
+export function down() {
+  db.exec(`DROP TABLE IF EXISTS world_info`);
+  console.log('[Migration 005] Successfully dropped world_info table');
 }
 
 export default { up, down };

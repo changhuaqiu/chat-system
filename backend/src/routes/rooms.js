@@ -9,12 +9,7 @@ export function roomsRoutes(fastify, options, done) {
 
   fastify.get('/api/rooms', async (request, reply) => {
     try {
-      const rooms = await new Promise((resolve, reject) => {
-        db.all('SELECT * FROM rooms ORDER BY created_at DESC', (err, rows) => {
-          if (err) reject(err);
-          else resolve(rows);
-        });
-      });
+      const rooms = db.prepare('SELECT * FROM rooms ORDER BY created_at DESC').all();
       reply.send({ success: true, rooms });
     } catch (error) {
       console.error('Error fetching rooms:', error);
@@ -25,12 +20,7 @@ export function roomsRoutes(fastify, options, done) {
   fastify.get('/api/rooms/:id', async (request, reply) => {
     try {
       const { id } = request.params;
-      const room = await new Promise((resolve, reject) => {
-        db.get('SELECT * FROM rooms WHERE id = ?', [id], (err, row) => {
-          if (err) reject(err);
-          else resolve(row);
-        });
-      });
+      const room = db.prepare('SELECT * FROM rooms WHERE id = ?').get(id);
       if (!room) {
         return reply.code(404).send({ success: false, error: 'Room not found' });
       }
@@ -48,16 +38,7 @@ export function roomsRoutes(fastify, options, done) {
         return reply.code(400).send({ success: false, error: 'Room name is required' });
       }
       const id = uuidv4();
-      await new Promise((resolve, reject) => {
-        db.run(
-          'INSERT INTO rooms (id, name, description, type, created_by) VALUES (?, ?, ?, ?, ?)',
-          [id, name, description || '', type, createdBy || 'system'],
-          function(err) {
-            if (err) reject(err);
-            else resolve();
-          }
-        );
-      });
+      db.prepare('INSERT INTO rooms (id, name, description, type, created_by) VALUES (?, ?, ?, ?, ?)').run(id, name, description || '', type, createdBy || 'system');
       reply.code(201).send({ success: true, room: { id, name, description, type, created_by: createdBy || 'system' } });
     } catch (error) {
       console.error('Error creating room:', error);
@@ -68,18 +49,8 @@ export function roomsRoutes(fastify, options, done) {
   fastify.delete('/api/rooms/:id', async (request, reply) => {
     try {
       const { id } = request.params;
-      await new Promise((resolve, reject) => {
-        db.run('DELETE FROM messages WHERE room_id = ?', [id], (err) => {
-          if (err) reject(err);
-          else resolve();
-        });
-      });
-      const result = await new Promise((resolve, reject) => {
-        db.run('DELETE FROM rooms WHERE id = ?', [id], function(err) {
-          if (err) reject(err);
-          else resolve({ changes: this.changes });
-        });
-      });
+      db.prepare('DELETE FROM messages WHERE room_id = ?').run(id);
+      const result = db.prepare('DELETE FROM rooms WHERE id = ?').run(id);
       if (result.changes === 0) {
         return reply.code(404).send({ success: false, error: 'Room not found' });
       }
@@ -94,40 +65,18 @@ export function roomsRoutes(fastify, options, done) {
     try {
       const { id } = request.params;
       const { limit = 50 } = request.query;
-      const room = await new Promise((resolve, reject) => {
-        db.get('SELECT * FROM rooms WHERE id = ?', [id], (err, row) => {
-          if (err) reject(err);
-          else resolve(row);
-        });
-      });
+      const room = db.prepare('SELECT * FROM rooms WHERE id = ?').get(id);
       if (!room) {
         return reply.code(404).send({ success: false, error: 'Room not found' });
       }
-      const messages = await new Promise((resolve, reject) => {
-        db.all(
-          'SELECT * FROM messages WHERE room_id = ? ORDER BY timestamp DESC LIMIT ?',
-          [id, parseInt(limit)],
-          (err, rows) => {
-            if (err) reject(err);
-            else resolve(rows.reverse());
-          }
-        );
-      });
+      const messages = db.prepare('SELECT * FROM messages WHERE room_id = ? ORDER BY timestamp DESC LIMIT ?').all(id, parseInt(limit)).reverse();
 
       // Fetch reactions for these messages
       const messageIds = messages.length > 0 ? messages.map(m => `'${m.id}'`).join(',') : null;
       let reactions = [];
-      
+
       if (messageIds) {
-        reactions = await new Promise((resolve, reject) => {
-            db.all(
-                `SELECT * FROM message_reactions WHERE message_id IN (${messageIds})`,
-                (err, rows) => {
-                    if (err) reject(err);
-                    else resolve(rows);
-                }
-            );
-        });
+        reactions = db.prepare(`SELECT * FROM message_reactions WHERE message_id IN (${messageIds})`).all();
       }
 
       // Normalize messages to camelCase and attach reactions

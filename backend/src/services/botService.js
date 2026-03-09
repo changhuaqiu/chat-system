@@ -41,12 +41,7 @@ export class BotService {
     console.log(`[BotService] Payload: roomId=${roomId}, sender=${sender}, mentions=${JSON.stringify(mentions)}, content="${content}"`);
 
     // 1. Fetch all online bots
-    const bots = await new Promise((resolve, reject) => {
-        db.all("SELECT * FROM bots WHERE status = 'online'", (err, rows) => {
-            if (err) reject(err);
-            else resolve(rows);
-        });
-    });
+    const bots = db.prepare("SELECT * FROM bots WHERE status = 'online'").all();
 
     console.log(`[BotService] Found ${bots.length} online bots: ${bots.map(b => b.id).join(', ')}`);
 
@@ -171,26 +166,18 @@ export class BotService {
 
     try {
         // Fetch conversation history from DB (last 20 messages)
-        const history = await new Promise((resolve, reject) => {
-            db.all(
-                `SELECT sender, content, message_type, media_url, timestamp FROM messages
-                 WHERE room_id = ? AND is_deleted = 0
-                 ORDER BY timestamp DESC
-                 LIMIT 20`,
-                [roomId],
-                (err, rows) => {
-                    if (err) reject(err);
-                    else {
-                        // Reverse to get chronological order and format for LLM
-                        const formattedHistory = rows.reverse().map(msg => ({
-                            role: msg.sender === 'user' ? 'user' : 'assistant',
-                            content: msg.message_type === 'image' ? `[Image: ${msg.media_url}]` : msg.content
-                        }));
-                        resolve(formattedHistory);
-                    }
-                }
-            );
-        });
+        const rows = db.prepare(
+            `SELECT sender, content, message_type, media_url, timestamp FROM messages
+             WHERE room_id = ? AND is_deleted = 0
+             ORDER BY timestamp DESC
+             LIMIT 20`
+        ).all(roomId);
+
+        // Reverse to get chronological order and format for LLM
+        const history = rows.reverse().map(msg => ({
+            role: msg.sender === 'user' ? 'user' : 'assistant',
+            content: msg.message_type === 'image' ? `[Image: ${msg.media_url}]` : msg.content
+        }));
 
         // If no history, use current message
         if (history.length === 0) {
@@ -251,17 +238,19 @@ export class BotService {
   }
 
   updateBotStats(botId, requests = 1, tokens = 0, latency = 0) {
-      db.run(`
-          INSERT INTO bot_stats (bot_id, total_requests, total_tokens, last_latency_ms, last_active)
-          VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-          ON CONFLICT(bot_id) DO UPDATE SET
-            total_requests = total_requests + ?,
-            total_tokens = total_tokens + ?,
-            last_latency_ms = ?,
-            last_active = CURRENT_TIMESTAMP
-      `, [botId, requests, tokens, latency, requests, tokens, latency], (err) => {
-          if (err) console.error('Failed to update bot stats', err);
-      });
+      try {
+          db.prepare(`
+              INSERT INTO bot_stats (bot_id, total_requests, total_tokens, last_latency_ms, last_active)
+              VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+              ON CONFLICT(bot_id) DO UPDATE SET
+                total_requests = total_requests + ?,
+                total_tokens = total_tokens + ?,
+                last_latency_ms = ?,
+                last_active = CURRENT_TIMESTAMP
+          `).run(botId, requests, tokens, latency, requests, tokens, latency);
+      } catch (err) {
+          console.error('Failed to update bot stats', err);
+      }
   }
 
   async testConnection(providerType, config) {
@@ -276,16 +265,16 @@ export class BotService {
       // This is the legacy entry point.
       // We can redirect it to publish an event, OR just return empty promises if we rely on the event listener.
       // Since server.js calls this AND emits its own socket events, if we double-emit it might be duplicated.
-      // 
+      //
       // STRATEGY:
       // If server.js is NOT updated yet (Task 3 not done), we need to keep this logic working.
       // But we want to use the new Runtime.
-      // 
+      //
       // Let's make this method just publish the event!
       // But server.js expects a return value of responses to save to DB.
       // If we publish event, the event listener will trigger bot, which publishes another event.
       // The socket listener (if updated) will catch that.
-      // 
+      //
       // PROBLEM: server.js lines 90-106 wait for `responses` and save them to DB.
       // If we change this to async event, `responses` will be empty.
       // server.js won't save bot responses.
@@ -293,24 +282,24 @@ export class BotService {
       // Who saves the bot response to DB?
       // `EventBus` persists ALL events to `events` table.
       // But we also need them in `messages` table for the frontend history.
-      // 
+      //
       // Solution: Add a listener for `message.created` that syncs to `messages` table?
       // Or modify `EventBus` to write to `messages` table too?
       // Or, for now, let `BotService` write to `messages` table inside `triggerBot`?
-      
+
       // Let's publish the event here to trigger the new flow.
       // And return empty array to legacy caller so it doesn't do anything double.
-      
+
       const sourceUrn = isHuman ? `agent:user:${sender}` : `agent:${sender}`;
       const targetUrn = `room:${room}`;
-      
+
       const payload = { roomId: room, sender, content, mentions };
-      
+
       // Publish event to trigger the chain
       // Note: This assumes the USER message is already saved by server.js (it is).
       // We are just triggering the bots.
       await eventBus.publish('message.created', sourceUrn, targetUrn, payload);
-      
+
       return []; // Legacy caller gets nothing, relies on EventBus -> Socket/DB flow.
   }
 }

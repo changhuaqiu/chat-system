@@ -116,57 +116,38 @@ class OneApiService {
   /**
    * Get channel mapping from database
    */
-  async getChannelMapping(botId) {
-    return new Promise((resolve, reject) => {
-      db.get('SELECT * FROM oneapi_channels WHERE bot_id = ?', [botId], (err, row) => {
-        if (err) reject(err);
-        else resolve(row);
-      });
-    });
+  getChannelMapping(botId) {
+    return db.prepare('SELECT * FROM oneapi_channels WHERE bot_id = ?').get(botId);
   }
 
   /**
    * Save channel mapping to database
    */
-  async saveChannelMapping(botId, channelData) {
+  saveChannelMapping(botId, channelData) {
     const { channel_id, channel_name, token_id, token_key, provider_type, model_name, original_api_key } = channelData;
 
-    return new Promise((resolve, reject) => {
-      db.run(
-        `INSERT OR REPLACE INTO oneapi_channels
-         (bot_id, channel_id, channel_name, token_id, token_key, provider_type, model_name, original_api_key, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-        [botId, channel_id, channel_name, token_id, token_key, provider_type, model_name, original_api_key],
-        (err) => {
-          if (err) reject(err);
-          else resolve({ success: true });
-        }
-      );
-    });
+    db.prepare(
+      `INSERT OR REPLACE INTO oneapi_channels
+       (bot_id, channel_id, channel_name, token_id, token_key, provider_type, model_name, original_api_key, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`
+    ).run(botId, channel_id, channel_name, token_id, token_key, provider_type, model_name, original_api_key);
+
+    return { success: true };
   }
 
   /**
    * Delete channel mapping from database
    */
-  async deleteChannelMapping(botId) {
-    return new Promise((resolve, reject) => {
-      db.run('DELETE FROM oneapi_channels WHERE bot_id = ?', [botId], (err) => {
-        if (err) reject(err);
-        else resolve({ success: true });
-      });
-    });
+  deleteChannelMapping(botId) {
+    db.prepare('DELETE FROM oneapi_channels WHERE bot_id = ?').run(botId);
+    return { success: true };
   }
 
   /**
    * Get all channel mappings
    */
-  async getAllChannelMappings() {
-    return new Promise((resolve, reject) => {
-      db.all('SELECT * FROM oneapi_channels ORDER BY created_at DESC', (err, rows) => {
-        if (err) reject(err);
-        else resolve(rows);
-      });
-    });
+  getAllChannelMappings() {
+    return db.prepare('SELECT * FROM oneapi_channels ORDER BY created_at DESC').all();
   }
 
   /**
@@ -175,7 +156,7 @@ class OneApiService {
    */
   async setupBotEnv(botId, providerType, apiKey, models = [], upstreamBaseUrl = '') {
     // Check if mapping already exists
-    const existingMapping = await this.getChannelMapping(botId);
+    const existingMapping = this.getChannelMapping(botId);
     if (existingMapping && existingMapping.status === 'active') {
       console.log(`[OneApiService] Using existing channel for bot ${botId}`);
       return {
@@ -273,7 +254,7 @@ class OneApiService {
       }
 
       // 3. Save mapping to database
-      await this.saveChannelMapping(botId, {
+      this.saveChannelMapping(botId, {
         channel_id: channelId,
         channel_name: channelName,
         token_id: tokenId,
@@ -299,7 +280,7 @@ class OneApiService {
    * Delete bot's One-API channel and token
    */
   async deleteBotChannel(botId) {
-    const mapping = await this.getChannelMapping(botId);
+    const mapping = this.getChannelMapping(botId);
     if (!mapping) {
       return { success: true, message: 'No channel mapping found' };
     }
@@ -326,7 +307,7 @@ class OneApiService {
       }
 
       // 3. Delete mapping from database
-      await this.deleteChannelMapping(botId);
+      this.deleteChannelMapping(botId);
 
       return { success: true };
     } catch (error) {
@@ -339,7 +320,7 @@ class OneApiService {
    * Sync channel status from One-API
    */
   async syncChannelStatus(botId) {
-    const mapping = await this.getChannelMapping(botId);
+    const mapping = this.getChannelMapping(botId);
     if (!mapping || !mapping.channel_id) {
       return null;
     }
@@ -349,12 +330,8 @@ class OneApiService {
       const status = channelRes.data.data.status === 1 ? 'active' : 'inactive';
 
       // Update database
-      return new Promise((resolve, reject) => {
-        db.run('UPDATE oneapi_channels SET status = ? WHERE bot_id = ?', [status, botId], (err) => {
-          if (err) reject(err);
-          else resolve({ ...mapping, status });
-        });
-      });
+      db.prepare('UPDATE oneapi_channels SET status = ? WHERE bot_id = ?').run(status, botId);
+      return { ...mapping, status };
     } catch (e) {
       console.error('[OneApiService] Status sync failed:', e.message);
       return { ...mapping, status: 'unknown' };
@@ -452,7 +429,7 @@ class OneApiService {
       }
 
       // 2. Save mapping to database
-      await this.saveChannelMapping(botId, {
+      this.saveChannelMapping(botId, {
         channel_id: channelId,
         channel_name: channelName,
         token_id: tokenId,
@@ -468,29 +445,22 @@ class OneApiService {
       const colorIndex = botId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length;
       const botColor = colors[colorIndex];
 
-      await new Promise((resolve, reject) => {
-        db.run(
-          `INSERT INTO bots (id, name, avatar, color, provider_type, config, status) VALUES (?, ?, ?, ?, ?, ?, 'online')`,
-          [
-            botId,
-            botName || `Bot ${botId}`,
-            null, // Avatar can be set later
-            botColor,
-            'oneapi',
-            JSON.stringify({
-              apiKey: tokenKey,
-              baseUrl: `${this.ONE_API_URL}/v1`,
-              model: modelName,
-              originalProvider: 'oneapi',
-              originalModel: modelName
-            })
-          ],
-          (err) => {
-            if (err) reject(err);
-            else resolve();
-          }
-        );
-      });
+      db.prepare(
+        `INSERT INTO bots (id, name, avatar, color, provider_type, config, status) VALUES (?, ?, ?, ?, ?, ?, 'online')`
+      ).run(
+        botId,
+        botName || `Bot ${botId}`,
+        null, // Avatar can be set later
+        botColor,
+        'oneapi',
+        JSON.stringify({
+          apiKey: tokenKey,
+          baseUrl: `${this.ONE_API_URL}/v1`,
+          model: modelName,
+          originalProvider: 'oneapi',
+          originalModel: modelName
+        })
+      );
 
       console.log(`[OneApiService] Bot ${botId} registered in bots table`);
 

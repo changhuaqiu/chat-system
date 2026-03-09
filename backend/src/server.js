@@ -97,19 +97,16 @@ const start = async () => {
         // Persist to 'messages' table (Frontend History)
         // We use INSERT OR IGNORE or similar logic if ID exists, but sqlite doesn't support IGNORE easily without unique constraint.
         // ID is primary key, so INSERT OR IGNORE works.
-        db.run(
-            'INSERT OR IGNORE INTO messages (id, room_id, sender, content, mentions, message_type, media_url, timestamp, reply_to_id, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [id, roomId, sender, content, JSON.stringify(mentions || []), messageType, mediaUrl, timestamp, replyToId, JSON.stringify(metadata || {})],
-            (err) => {
-                if (err) {
-                    console.error('Error persisting message:', err);
-                    loggerService.error('database', 'Error persisting message', { error: err.message, messageId: id });
-                } else {
-                    // Broadcast to Room
-                    io.to(roomId).emit('messageReceived', payload);
-                }
-            }
-        );
+        try {
+            db.prepare(
+                'INSERT OR IGNORE INTO messages (id, room_id, sender, content, mentions, message_type, media_url, timestamp, reply_to_id, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+            ).run(id, roomId, sender, content, JSON.stringify(mentions || []), messageType, mediaUrl, timestamp, replyToId, JSON.stringify(metadata || {}));
+            // Broadcast to Room
+            io.to(roomId).emit('messageReceived', payload);
+        } catch (err) {
+            console.error('Error persisting message:', err);
+            loggerService.error('database', 'Error persisting message', { error: err.message, messageId: id });
+        }
     });
 
     // 2. Typing Indicators - Forward full typing info to clients

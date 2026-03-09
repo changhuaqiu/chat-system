@@ -2,20 +2,20 @@
  * Migration Runner
  *
  * Executes all pending migrations in order.
- * Only runs migrations with ES Module format (export up/down functions).
+ * Uses better-sqlite3 synchronous API.
  * Usage: node migrations/run.js
- *
- * Note: Migrations 001-004 are old format (standalone scripts) and are
- * executed directly. This runner handles migrations 005+.
  */
 
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { db } from '../src/db.js';
+import Database from 'better-sqlite3';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const dbPath = path.join(__dirname, '..', 'data', 'chat.db');
+const db = new Database(dbPath);
 
 // Migration files that use old format (standalone scripts) - skip these
 const SKIP_MIGRATIONS = [
@@ -28,47 +28,24 @@ const SKIP_MIGRATIONS = [
 
 // Ensure migrations table exists
 function ensureMigrationsTable() {
-  return new Promise((resolve, reject) => {
-    db.run(`
-      CREATE TABLE IF NOT EXISTS migrations (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL UNIQUE,
-        executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `, (err) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve();
-      }
-    });
-  });
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS migrations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL UNIQUE,
+      executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 }
 
 // Get list of executed migrations
 function getExecutedMigrations() {
-  return new Promise((resolve, reject) => {
-    db.all('SELECT name FROM migrations ORDER BY id', [], (err, rows) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(rows.map(row => row.name));
-      }
-    });
-  });
+  const rows = db.prepare('SELECT name FROM migrations ORDER BY id').all();
+  return rows.map(row => row.name);
 }
 
 // Record migration as executed
 function recordMigration(name) {
-  return new Promise((resolve, reject) => {
-    db.run('INSERT INTO migrations (name) VALUES (?)', [name], (err) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve();
-      }
-    });
-  });
+  db.prepare('INSERT INTO migrations (name) VALUES (?)').run(name);
 }
 
 // Run a single migration
@@ -89,7 +66,7 @@ async function runMigration(migrationFile) {
     // Only run migrations with ES Module format (up/down exports)
     if (typeof migration.up === 'function') {
       await migration.up();
-      await recordMigration(migrationName);
+      recordMigration(migrationName);
       console.log(`✓ Migration ${migrationName} completed`);
       return true;
     } else {
@@ -108,11 +85,11 @@ async function runMigrations() {
 
   try {
     // Ensure migrations table exists
-    await ensureMigrationsTable();
+    ensureMigrationsTable();
     console.log('Migrations table ready\n');
 
     // Get executed migrations
-    const executed = await getExecutedMigrations();
+    const executed = getExecutedMigrations();
     console.log(`Executed migrations: ${executed.length}`);
 
     // Get migration files
@@ -142,7 +119,7 @@ async function runMigrations() {
       if (SKIP_MIGRATIONS.includes(migrationFile)) {
         console.log(`  ⚭ Skipped (old format - standalone script): ${migrationName}`);
         // Mark old format migrations as executed to avoid re-running
-        await recordMigration(migrationName);
+        recordMigration(migrationName);
         continue;
       }
 
@@ -156,12 +133,8 @@ async function runMigrations() {
     process.exit(1);
   } finally {
     // Close database connection
-    db.close((err) => {
-      if (err) {
-        console.error('Error closing database:', err);
-      }
-      process.exit(0);
-    });
+    db.close();
+    process.exit(0);
   }
 }
 

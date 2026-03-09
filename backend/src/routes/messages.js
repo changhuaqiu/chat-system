@@ -3,7 +3,7 @@ import { eventBus } from '../services/eventBus.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export function messageRoutes(fastify, options, done) {
-  
+
   // Send Message (REST API for Agents/External)
   fastify.post('/api/chat/send', async (request, reply) => {
     const { roomId, sender, content, mentions = [], messageType = 'text', mediaUrl = null, replyToId = null, metadata = {} } = request.body;
@@ -62,50 +62,32 @@ export function messageRoutes(fastify, options, done) {
       return reply.code(400).send({ error: 'Missing userId or emoji' });
     }
 
-    return new Promise((resolve, reject) => {
+    try {
       // Check if reaction exists
-      db.get(
-        'SELECT id FROM message_reactions WHERE message_id = ? AND user_id = ? AND emoji = ?',
-        [id, userId, emoji],
-        (err, row) => {
-          if (err) return reply.code(500).send({ error: err.message });
+      const row = db.prepare('SELECT id FROM message_reactions WHERE message_id = ? AND user_id = ? AND emoji = ?').get(id, userId, emoji);
 
-          if (row) {
-            // Remove reaction (Toggle off)
-            db.run(
-              'DELETE FROM message_reactions WHERE id = ?',
-              [row.id],
-              (err) => {
-                if (err) return reply.code(500).send({ error: err.message });
-                
-                // Emit update via Socket
-                if (fastify.io) {
-                    fastify.io.emit('reactionUpdate', { messageId: id, userId, emoji, action: 'remove' });
-                }
-                reply.send({ success: true, action: 'removed' });
-                resolve();
-              }
-            );
-          } else {
-            // Add reaction (Toggle on)
-            db.run(
-              'INSERT INTO message_reactions (message_id, user_id, emoji) VALUES (?, ?, ?)',
-              [id, userId, emoji],
-              (err) => {
-                if (err) return reply.code(500).send({ error: err.message });
-                
-                // Emit update via Socket
-                if (fastify.io) {
-                    fastify.io.emit('reactionUpdate', { messageId: id, userId, emoji, action: 'add' });
-                }
-                reply.send({ success: true, action: 'added' });
-                resolve();
-              }
-            );
-          }
+      if (row) {
+        // Remove reaction (Toggle off)
+        db.prepare('DELETE FROM message_reactions WHERE id = ?').run(row.id);
+
+        // Emit update via Socket
+        if (fastify.io) {
+            fastify.io.emit('reactionUpdate', { messageId: id, userId, emoji, action: 'remove' });
         }
-      );
-    });
+        reply.send({ success: true, action: 'removed' });
+      } else {
+        // Add reaction (Toggle on)
+        db.prepare('INSERT INTO message_reactions (message_id, user_id, emoji) VALUES (?, ?, ?)').run(id, userId, emoji);
+
+        // Emit update via Socket
+        if (fastify.io) {
+            fastify.io.emit('reactionUpdate', { messageId: id, userId, emoji, action: 'add' });
+        }
+        reply.send({ success: true, action: 'added' });
+      }
+    } catch (error) {
+      reply.code(500).send({ error: error.message });
+    }
   });
 
   done();
