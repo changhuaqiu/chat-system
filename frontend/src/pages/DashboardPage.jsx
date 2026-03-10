@@ -1,12 +1,5 @@
 /**
- * Dashboard Page
- *
- * Enhanced dashboard with:
- * - Real-time data refresh (30s polling)
- * - Message trend charts
- * - Agent performance metrics
- * - API usage statistics
- * - Search/filter functionality
+ * Dashboard Page - 像素风格
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -19,14 +12,12 @@ import {
   ApiUsageChart
 } from '../components/Dashboard';
 
-// Refresh interval in milliseconds (30 seconds)
 const REFRESH_INTERVAL = 30000;
 
 const DashboardPage = () => {
   const navigate = useNavigate();
   const { agents, loading: agentsLoading, refreshAgents } = useAgents();
 
-  // State
   const [stats, setStats] = useState({
     totalAgents: 0,
     activeAgents: 0,
@@ -44,12 +35,10 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(null);
 
-  // Fetch all dashboard data
   const fetchDashboardData = useCallback(async (showLoading = true) => {
     try {
       if (showLoading) setLoading(true);
 
-      // Fetch all data in parallel
       const [dashboardStats, trendResponse, performanceResponse, apiUsageResponse] = await Promise.all([
         apiService.getDashboardStats().catch(() => null),
         apiService.getMessageTrend(7).catch(() => ({ data: [] })),
@@ -57,7 +46,6 @@ const DashboardPage = () => {
         apiService.getApiUsage(7).catch(() => ({ modelDistribution: [], totals: {} }))
       ]);
 
-      // Update stats
       if (dashboardStats) {
         setStats({
           totalAgents: dashboardStats.overview?.totalAgents || agents.length,
@@ -70,7 +58,6 @@ const DashboardPage = () => {
           avgLatency: dashboardStats.api?.avgLatency || 0
         });
       } else {
-        // Fallback: calculate from agents
         const active = agents.filter(a => a.status === 'active' || a.status === 'online').length;
         setStats(prev => ({
           ...prev,
@@ -80,13 +67,8 @@ const DashboardPage = () => {
         }));
       }
 
-      // Update trend data
       setTrendData(trendResponse.data || []);
-
-      // Update performance data
       setPerformanceData(performanceResponse.data || []);
-
-      // Update API usage data
       setApiUsageData({
         modelDistribution: apiUsageResponse.modelDistribution || [],
         totals: apiUsageResponse.totals || {}
@@ -100,13 +82,11 @@ const DashboardPage = () => {
     }
   }, [agents]);
 
-  // Initial load and refresh agents
   useEffect(() => {
     refreshAgents();
     fetchDashboardData(true);
   }, []);
 
-  // Polling for auto-refresh
   useEffect(() => {
     const intervalId = setInterval(() => {
       fetchDashboardData(false);
@@ -115,7 +95,6 @@ const DashboardPage = () => {
     return () => clearInterval(intervalId);
   }, [fetchDashboardData]);
 
-  // Filter agents by search query
   const filteredAgents = agents.filter(agent => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
@@ -125,68 +104,69 @@ const DashboardPage = () => {
     );
   });
 
-  // Stat Card Component
+  // Stat Card Component - 像素风格
   const StatCard = ({ title, value, subtext, icon, color, trend }) => (
-    <div className="glass-panel p-6 rounded-2xl border border-white/10">
+    <div className="bg-bg-card p-6 border-4 border-border shadow-pixel-md">
       <div className="flex justify-between items-start">
         <div>
-          <p className="text-sm font-medium text-white/60">{title}</p>
-          <h3 className="text-3xl font-semibold text-white mt-2">{value}</h3>
+          <p className="text-sm font-pixel-title text-pixel-gray">{title}</p>
+          <h3 className="text-2xl font-pixel-title text-white mt-2">{value}</h3>
           {subtext && (
-            <p className={`text-xs mt-1 ${trend > 0 ? 'text-emerald-400' : trend < 0 ? 'text-red-400' : 'text-white/40'}`}>
+            <p className={`text-xs mt-1 font-pixel-body ${trend > 0 ? 'text-pixel-accent-green' : trend < 0 ? 'text-pixel-accent-pink' : 'text-pixel-gray'}`}>
               {subtext}
             </p>
           )}
         </div>
-        <div className={`w-10 h-10 rounded-full ${color} flex items-center justify-center text-white text-lg shadow-lg`}>
+        <div className={`w-10 h-10 ${color} border-4 flex items-center justify-center text-white text-lg shadow-pixel-sm`}
+             style={{ borderColor: color.replace('bg-', '').includes('blue') ? '#3b82f6' : color.includes('emerald') ? '#059669' : color.includes('indigo') ? '#4f46e5' : '#c2410c' }}>
           {icon}
         </div>
       </div>
     </div>
   );
 
-  // Agent Card Component
+  // Agent Card Component - 像素风格
   const AgentCard = ({ agent }) => (
-    <div className="character-card p-5 rounded-2xl border border-white/10 hover:shadow-md transition-shadow duration-200">
+    <div className="bg-bg-card p-5 border-4 border-border shadow-pixel-md hover:shadow-pixel-lg transition-shadow">
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center text-2xl border border-white/10">
+          <div className="w-12 h-12 bg-bg-secondary border-4 border-border flex items-center justify-center text-2xl">
             {agent.avatar || '🤖'}
           </div>
           <div>
-            <h4 className="font-semibold text-white">{agent.name}</h4>
-            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-              (agent.status === 'active' || agent.status === 'online') ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/10 text-white/40'
+            <h4 className="font-pixel-body text-base text-white">{agent.name}</h4>
+            <span className={`inline-flex items-center px-2 py-0.5 text-xs font-pixel-title border-2 ${
+              (agent.status === 'active' || agent.status === 'online') ? 'bg-pixel-accent-green/20 text-pixel-accent-green border-pixel-accent-green' : 'bg-bg-secondary text-pixel-gray border-border'
             }`}>
               {(agent.status === 'active' || agent.status === 'online') ? '● 在线' : '○ 离线'}
             </span>
           </div>
         </div>
-        <button className="text-white/40 hover:text-white">
+        <button className="text-pixel-gray hover:text-white">
           <span className="text-xl">⋮</span>
         </button>
       </div>
 
       <div className="space-y-3">
         <div className="flex justify-between text-sm">
-          <span className="text-white/60">模型</span>
-          <span className="font-medium text-white">{agent.model || agent.model_provider || 'OpenAI'}</span>
+          <span className="text-pixel-gray font-pixel-body">模型</span>
+          <span className="font-pixel-body text-white">{agent.model || agent.model_provider || 'OpenAI'}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-white/60">类型</span>
-          <span className="font-medium text-white">{agent.type || 'Assistant'}</span>
+          <span className="text-pixel-gray font-pixel-body">类型</span>
+          <span className="font-pixel-body text-white">{agent.type || 'Assistant'}</span>
         </div>
 
-        <div className="pt-3 border-t border-white/10 flex space-x-2">
+        <div className="pt-3 border-t-4 border-border flex space-x-2">
           <button
             onClick={() => navigate('/logs')}
-            className="flex-1 bg-white/5 hover:bg-white/10 text-white text-sm font-medium py-2 rounded-lg transition-colors border border-white/10"
+            className="flex-1 bg-bg-secondary hover:bg-bg-input text-white text-sm font-pixel-body py-2 border-4 border-border transition-colors"
           >
             日志
           </button>
           <button
             onClick={() => navigate('/admin')}
-            className="flex-1 bg-white/5 hover:bg-white/10 text-white text-sm font-medium py-2 rounded-lg transition-colors border border-white/10"
+            className="flex-1 bg-bg-secondary hover:bg-bg-input text-white text-sm font-pixel-body py-2 border-4 border-border transition-colors"
           >
             编辑
           </button>
@@ -196,23 +176,20 @@ const DashboardPage = () => {
   );
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 relative">
-      {/* 背景装饰 */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="floating-shape w-96 h-96 bg-purple-500 top-0 left-0 -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="floating-shape w-80 h-80 bg-blue-500 top-1/2 right-0 translate-x-1/3"></div>
-      </div>
+    <div className="flex-1 overflow-y-auto p-8 relative pixel-scrollbar">
+      {/* 像素图案背景 */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none pixel-pattern-bg opacity-20"></div>
 
       <div className="relative z-10">
         <header className="mb-8">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-white tracking-tight">仪表盘</h1>
-              <p className="text-white/40 mt-1">AI 智能体网络概览</p>
+              <h1 className="text-2xl font-pixel-title text-white tracking-tight">仪表盘</h1>
+              <p className="text-pixel-gray mt-1 font-pixel-body">AI 智能体网络概览</p>
             </div>
             {lastRefresh && (
-              <div className="text-xs text-white/40 flex items-center space-x-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <div className="text-xs text-pixel-gray flex items-center space-x-2 font-pixel-body">
+                <span className="w-2 h-2 bg-pixel-accent-green animate-pulse"></span>
                 <span>最后更新: {lastRefresh.toLocaleTimeString()}</span>
               </div>
             )}
@@ -226,21 +203,21 @@ const DashboardPage = () => {
             value={stats.totalAgents}
             subtext={stats.newAgentsThisWeek > 0 ? `本周新增 ${stats.newAgentsThisWeek} 个` : '暂无新增'}
             icon="🤖"
-            color="bg-blue-500"
+            color="bg-pixel-accent-cyan"
           />
           <StatCard
             title="当前在线"
             value={stats.activeAgents}
             subtext={`在线率 ${stats.onlineRate}%`}
             icon="🟢"
-            color="bg-emerald-500"
+            color="bg-pixel-accent-green"
           />
           <StatCard
             title="今日消息"
             value={stats.todayMessages.toLocaleString()}
             subtext={stats.todayGrowth !== 0 ? `较昨日 ${stats.todayGrowth > 0 ? '+' : ''}${stats.todayGrowth}%` : '暂无对比数据'}
             icon="💬"
-            color="bg-indigo-500"
+            color="bg-pixel-primary"
             trend={stats.todayGrowth}
           />
           <StatCard
@@ -248,24 +225,20 @@ const DashboardPage = () => {
             value={`${stats.avgLatency}ms`}
             subtext="API 响应时间"
             icon="⚡"
-            color="bg-orange-500"
+            color="bg-pixel-accent-orange"
           />
         </div>
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* Message Trend Chart - spans 2 columns */}
           <div className="lg:col-span-2">
             <MessageTrendChart data={trendData} loading={loading} />
           </div>
-
-          {/* Agent Performance Panel */}
           <div className="lg:col-span-1">
             <AgentPerformancePanel data={performanceData} loading={loading} />
           </div>
         </div>
 
-        {/* API Usage Chart */}
         <div className="mb-8">
           <ApiUsageChart
             data={apiUsageData.modelDistribution}
@@ -277,21 +250,21 @@ const DashboardPage = () => {
         {/* Agent Grid Section */}
         <section>
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-white">活跃智能体</h2>
+            <h2 className="text-lg font-pixel-title text-white">活跃智能体</h2>
             <div className="flex space-x-3">
               <div className="relative">
-                <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-white/30"></i>
+                <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-pixel-gray"></i>
                 <input
                   type="text"
                   placeholder="搜索智能体..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 transition-all w-64"
+                  className="pl-9 pr-4 py-2 bg-bg-input border-4 border-border text-sm text-white placeholder-pixel-gray focus:outline-none focus:border-pixel-border-highlight transition-colors w-64 font-pixel-body"
                 />
               </div>
               <button
                 onClick={() => navigate('/admin')}
-                className="btn-primary text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-lg flex items-center gap-2"
+                className="btn-primary text-white px-4 py-2 text-sm font-pixel-title flex items-center gap-2"
               >
                 <i className="ri-add-line"></i>
                 <span>新建智能体</span>
@@ -301,7 +274,7 @@ const DashboardPage = () => {
 
           {agentsLoading || loading ? (
             <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+              <div className="animate-spin w-8 h-8 border-4 border-pixel-primary border-t-transparent"></div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -309,12 +282,12 @@ const DashboardPage = () => {
                 <AgentCard key={agent.id} agent={agent} />
               ))}
               {filteredAgents.length === 0 && (
-                <div className="col-span-full flex flex-col items-center justify-center p-12 glass-panel rounded-2xl border border-dashed border-white/20">
+                <div className="col-span-full flex flex-col items-center justify-center p-12 bg-bg-card border-4 border-dashed border-border">
                   <div className="text-4xl mb-4">🤖</div>
-                  <h3 className="text-lg font-medium text-white">
+                  <h3 className="text-lg font-pixel-title text-white">
                     {searchQuery ? '未找到匹配的智能体' : '未找到智能体'}
                   </h3>
-                  <p className="text-white/40 mt-1">
+                  <p className="text-pixel-gray mt-1 font-pixel-body">
                     {searchQuery ? '请尝试其他搜索词' : '请创建您的第一个 AI 智能体。'}
                   </p>
                 </div>

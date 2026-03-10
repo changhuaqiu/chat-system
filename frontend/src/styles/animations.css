@@ -1,74 +1,102 @@
-/* 赛博科技风动画库 */
+/* 像素风格动画库 - 8-bit 复古游戏风 */
 
 /* ===================================
-   发光动画
+   像素闪烁效果
    =================================== */
 
-/* 辉光脉冲 */
-@keyframes glowPulse {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(16, 185, 129, 0.8);
-  }
+/* 像素闪烁 - 模拟 CRT 显示器 */
+@keyframes pixelFlicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.95; }
+  75% { opacity: 0.98; }
 }
 
-.glow-pulse {
-  animation: glowPulse 2s ease-in-out infinite;
+.pixel-flicker {
+  animation: pixelFlicker 0.1s infinite;
 }
 
-/* 霓虹闪烁 */
-@keyframes neonFlicker {
-  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
-    text-shadow: 0 0 5px var(--neon-blue), 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue);
-  }
-  20%, 24%, 55% {
-    text-shadow: none;
-  }
+/* 像素抖动效果 */
+@keyframes pixelShake {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(1px, 0); }
+  50% { transform: translate(0, 1px); }
+  75% { transform: translate(-1px, 0); }
 }
 
-.neon-flicker {
-  animation: neonFlicker 3s ease-in-out infinite;
+.pixel-shake {
+  animation: pixelShake 0.15s infinite;
 }
 
-/* 脉冲光环 */
-@keyframes pulseRing {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1.5);
-    opacity: 0;
-  }
+/* ===================================
+   像素按钮效果
+   =================================== */
+
+/* 按钮按下效果 */
+@keyframes pixelPress {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(2px, 2px); }
 }
 
-.pulse-ring {
-  animation: pulseRing 2s ease-out infinite;
+.pixel-press {
+  animation: pixelPress 0.1s ease-out forwards;
 }
 
-/* 在线状态脉冲 */
-@keyframes onlinePulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.1);
-  }
+/* 按钮弹起效果 */
+@keyframes pixelRelease {
+  0% { transform: translate(2px, 2px); }
+  100% { transform: translate(0, 0); }
 }
 
-.online-indicator {
-  animation: onlinePulse 2s ease-in-out infinite;
+.pixel-release {
+  animation: pixelRelease 0.1s ease-out;
+}
+
+/* ===================================
+   扫描线效果
+   =================================== */
+
+/* 全屏扫描线 */
+.scanlines-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+}
+
+/* 扫描线移动动画 */
+@keyframes scanlineMove {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.scanline-animated {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanline-animated::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(0, 243, 255, 0.5);
+  animation: scanlineMove 3s linear infinite;
 }
 
 /* ===================================
    输入/加载动画
    =================================== */
 
-/* 打字动画 */
+/* 像素打字动画 */
 @keyframes typingDot {
   0%, 60%, 100% {
     transform: translateY(0);
@@ -88,74 +116,109 @@
 .typing-dot:nth-child(2) { animation-delay: 0.2s; }
 .typing-dot:nth-child(3) { animation-delay: 0.4s; }
 
-/* 骨架屏加载 */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.05) 0%,
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(255, 255, 255, 0.05) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-}
-
-/* 边框流动 */
-@keyframes borderFlow {
-  0% {
-    background-position: 0% 50%;
+/* 像素加载动画 */
+@keyframes pixelLoader {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
   }
   50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
+    transform: scale(0.8);
+    opacity: 0.5;
   }
 }
 
-.border-flow {
+.pixel-loader {
+  animation: pixelLoader 0.6s ease-in-out infinite;
+}
+
+/* 骨架屏加载 */
+@keyframes pixelShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.pixel-skeleton {
   background: linear-gradient(
     90deg,
-    var(--border-primary),
-    var(--neon-purple),
-    var(--border-primary)
+    rgba(55, 65, 81, 0.5) 0%,
+    rgba(55, 65, 81, 0.8) 50%,
+    rgba(55, 65, 81, 0.5) 100%
   );
   background-size: 200% 100%;
-  animation: borderFlow 3s ease-in-out infinite;
+  animation: pixelShimmer 1.5s ease-in-out infinite;
 }
 
 /* ===================================
    过渡动画
    =================================== */
 
-/* 淡入 */
+/* 像素淡入 */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .fade-in {
   animation: fadeIn 0.3s ease-out;
 }
 
-/* 淡入上浮 */
-@keyframes fadeInUp {
+/* 像素弹入 - 替代淡入上浮 */
+@keyframes pixelPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  70% {
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.pixel-pop-in {
+  animation: pixelPopIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 像素滑入左 */
+@keyframes pixelSlideInLeft {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.pixel-slide-in-left {
+  animation: pixelSlideInLeft 0.3s ease-out;
+}
+
+/* 像素滑入右 */
+@keyframes pixelSlideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.pixel-slide-in-right {
+  animation: pixelSlideInRight 0.3s ease-out;
+}
+
+/* 像素滑入上 */
+@keyframes pixelSlideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -163,56 +226,8 @@
   }
 }
 
-.fade-in-up {
-  animation: fadeInUp 0.4s ease-out;
-}
-
-/* 淡入缩放 */
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.fade-in-scale {
-  animation: fadeInScale 0.3s ease-out;
-}
-
-/* 滑入左侧 */
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.slide-in-left {
-  animation: slideInLeft 0.3s ease-out;
-}
-
-/* 滑入右侧 */
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.slide-in-right {
-  animation: slideInRight 0.3s ease-out;
+.pixel-slide-in-up {
+  animation: pixelSlideInUp 0.3s ease-out;
 }
 
 /* 弹出效果 */
@@ -257,14 +272,20 @@
    Avatar 动画
    =================================== */
 
-/* Avatar 悬浮 */
+/* 像素跳动 */
+@keyframes pixelBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.pixel-bounce {
+  animation: pixelBounce 0.5s ease-in-out infinite;
+}
+
+/* Avatar 悬浮 -> 简化为跳动 */
 @keyframes avatarFloat {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
 }
 
 .avatar-float {
@@ -273,12 +294,8 @@
 
 /* Avatar 旋转 */
 @keyframes avatarSpin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .avatar-spin {
@@ -293,7 +310,7 @@
 @keyframes messageEnter {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -307,12 +324,8 @@
 
 /* 消息高亮 */
 @keyframes messageHighlight {
-  0%, 100% {
-    background-color: transparent;
-  }
-  50% {
-    background-color: rgba(99, 102, 241, 0.2);
-  }
+  0%, 100% { background-color: transparent; }
+  50% { background-color: rgba(99, 102, 241, 0.2); }
 }
 
 .message-highlight {
@@ -320,18 +333,221 @@
 }
 
 /* ===================================
-   数据流效果
+   在线状态动画
    =================================== */
 
-/* 数据流 */
+/* 在线状态脉冲 */
+@keyframes onlinePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+.online-indicator {
+  animation: onlinePulse 2s ease-in-out infinite;
+}
+
+/* ===================================
+   像素装饰动画
+   =================================== */
+
+/* 像素边框闪烁 */
+@keyframes pixelBorderFlash {
+  0%, 100% { border-color: #374151; }
+  50% { border-color: #6366f1; }
+}
+
+.pixel-border-flash {
+  animation: pixelBorderFlash 1s ease-in-out infinite;
+}
+
+/* 像素角落装饰 */
+@keyframes cornerPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.corner-pulse {
+  animation: cornerPulse 2s ease-in-out infinite;
+}
+
+/* ===================================
+   工具类
+   =================================== */
+
+/* 延迟类 */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+
+/* 持续类 */
+.duration-fast { animation-duration: 0.2s; }
+.duration-normal { animation-duration: 0.4s; }
+.duration-slow { animation-duration: 0.8s; }
+
+/* 缓动类 */
+.ease-bounce { animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+.ease-smooth { animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1); }
+.ease-in-out { animation-timing-function: ease-in-out; }
+/* 像素风格 - 步进动画 */
+.ease-pixel { animation-timing-function: steps(4); }
+
+/* 无限循环 */
+.animation-infinite { animation-iteration-count: infinite; }
+
+/* 暂停动画 */
+.animation-paused { animation-play-state: paused; }
+
+/* 反向动画 */
+.animation-reverse { animation-direction: reverse; }
+
+/* 交替动画 */
+.animation-alternate { animation-direction: alternate; }
+
+/* ===================================
+   保持向后兼容的旧动画类
+   =================================== */
+
+/* 发光脉冲 -> 替换为像素边框闪烁 */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 4px 4px 0 #374151; }
+  50% { box-shadow: 4px 4px 0 #6366f1; }
+}
+
+.glow-pulse {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+/* 霓虹闪烁 -> 像素闪烁 */
+@keyframes neonFlicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    opacity: 0.8;
+  }
+}
+
+.neon-flicker {
+  animation: neonFlicker 3s ease-in-out infinite;
+}
+
+/* 脉冲光环 */
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.pulse-ring {
+  animation: pulseRing 2s ease-out infinite;
+}
+
+/* 淡入上浮 -> 像素滑入 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+/* 淡入缩放 */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.fade-in-scale {
+  animation: fadeInScale 0.3s ease-out;
+}
+
+/* 滑入左侧 */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+/* 滑入右侧 */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* 扫描线效果 (保留兼容) */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.scanline {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanline::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(0, 243, 255, 0.5);
+  animation: scanline 3s linear infinite;
+}
+
+/* 数据流效果 (简化) */
 @keyframes dataStream {
   0% {
     transform: translateY(-100%);
     opacity: 0;
   }
-  50% {
-    opacity: 1;
-  }
+  50% { opacity: 1; }
   100% {
     transform: translateY(100%);
     opacity: 0;
@@ -359,98 +575,40 @@
   animation: dataStream 2s linear infinite;
 }
 
-/* 扫描线效果 */
-@keyframes scanline {
-  0% {
-    transform: translateY(-100%);
-  }
-  100% {
-    transform: translateY(100%);
-  }
+/* 边框流动 */
+@keyframes borderFlow {
+  0% { border-color: #374151; }
+  50% { border-color: #6366f1; }
+  100% { border-color: #374151; }
 }
 
-.scanline {
-  position: relative;
-  overflow: hidden;
+.border-flow {
+  animation: borderFlow 3s ease-in-out infinite;
 }
-
-.scanline::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--neon-blue) 50%,
-    transparent 100%
-  );
-  animation: scanline 3s linear infinite;
-}
-
-/* ===================================
-   HUD 元素动画
-   =================================== */
 
 /* HUD 边框 */
 @keyframes hudBorder {
-  0%, 100% {
-    border-color: rgba(99, 102, 241, 0.3);
-  }
-  50% {
-    border-color: rgba(99, 102, 241, 0.8);
-  }
+  0%, 100% { border-color: rgba(99, 102, 241, 0.3); }
+  50% { border-color: rgba(99, 102, 241, 0.8); }
 }
 
 .hud-border {
   animation: hudBorder 2s ease-in-out infinite;
 }
 
-/* 角落装饰 */
-@keyframes cornerPulse {
-  0%, 100% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 1;
-  }
+/* 骨架屏 */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-.corner-pulse {
-  animation: cornerPulse 2s ease-in-out infinite;
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(55, 65, 81, 0.5) 0%,
+    rgba(55, 65, 81, 0.8) 50%,
+    rgba(55, 65, 81, 0.5) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
 }
-
-/* ===================================
-   工具类
-   =================================== */
-
-/* 延迟类 */
-.delay-100 { animation-delay: 0.1s; }
-.delay-200 { animation-delay: 0.2s; }
-.delay-300 { animation-delay: 0.3s; }
-.delay-400 { animation-delay: 0.4s; }
-.delay-500 { animation-delay: 0.5s; }
-
-/* 持续类 */
-.duration-fast { animation-duration: 0.2s; }
-.duration-normal { animation-duration: 0.4s; }
-.duration-slow { animation-duration: 0.8s; }
-
-/* 缓动类 */
-.ease-bounce { animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
-.ease-smooth { animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1); }
-.ease-in-out { animation-timing-function: ease-in-out; }
-
-/* 无限循环 */
-.animation-infinite { animation-iteration-count: infinite; }
-
-/* 暂停动画 */
-.animation-paused { animation-play-state: paused; }
-
-/* 反向动画 */
-.animation-reverse { animation-direction: reverse; }
-
-/* 交替动画 */
-.animation-alternate { animation-direction: alternate; }

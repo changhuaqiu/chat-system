@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 /**
- * 房间上下文面板
+ * 房间上下文面板 - 像素风格
  * 展示项目目标、里程碑、已做出的决策
  */
 const RoomContextPanel = ({ context, onUpdate }) => {
@@ -38,17 +38,17 @@ const RoomContextPanel = ({ context, onUpdate }) => {
   };
 
   return (
-    <div className="glass-panel rounded-xl border border-white/10 overflow-hidden">
+    <div className="bg-bg-card border-4 border-border overflow-hidden">
       {/* 头部 */}
-      <div className="glass-panel border-b border-white/5 px-6 py-4 flex items-center justify-between">
+      <div className="bg-bg-card border-b-4 border-border px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <i className="ri-home-4-line text-blue-400 text-xl" />
+          <i className="ri-home-4-line text-pixel-accent-cyan text-xl" />
           <div>
-            <h3 className="text-base font-semibold text-white">房间上下文</h3>
-            <p className="text-xs text-white/40">当前项目的背景和目标</p>
+            <h3 className="text-base font-pixel-title text-white">房间上下文</h3>
+            <p className="text-xs text-pixel-gray font-pixel-body">当前项目的背景和目标</p>
           </div>
         </div>
-        <button className="px-4 py-2 btn-secondary text-white/70 rounded-xl text-sm font-medium">
+        <button className="px-4 py-2 border-4 border-border text-pixel-gray hover:text-white hover:border-pixel-primary text-sm font-pixel-body transition-colors">
           <i className="ri-edit-line" />
           编辑
         </button>
@@ -59,10 +59,10 @@ const RoomContextPanel = ({ context, onUpdate }) => {
         {/* 项目信息 */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium text-white/70">项目目标</label>
+            <label className="text-sm font-pixel-title text-white">项目目标</label>
             <button
               onClick={() => startEditing('goal', displayContext.goal)}
-              className="text-xs text-purple-400 hover:text-purple-300 transition-colors"
+              className="text-xs text-pixel-accent-purple hover:text-pixel-accent-cyan transition-colors font-pixel-body"
             >
               <i className="ri-edit-line" /> 编辑
             </button>
@@ -72,26 +72,26 @@ const RoomContextPanel = ({ context, onUpdate }) => {
               <textarea
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
-                className="flex-1 px-3 py-2 input-field rounded-xl text-white text-sm resize-none"
+                className="flex-1 px-3 py-2 border-4 border-border bg-bg-secondary text-white text-sm font-pixel-body resize-none outline-none focus:border-pixel-primary"
                 rows={3}
               />
               <button
                 onClick={saveEdit}
-                className="px-3 py-2 btn-primary text-white rounded-xl text-sm"
+                className="px-3 py-2 border-4 border-pixel-primary bg-pixel-primary text-white text-sm font-pixel-body hover:bg-pixel-accent-purple hover:border-pixel-accent-purple"
               >
                 保存
               </button>
             </div>
           ) : (
-            <p className="text-sm text-white/70">{displayContext.goal}</p>
+            <p className="text-sm text-white font-pixel-body">{displayContext.goal}</p>
           )}
         </div>
 
         {/* 里程碑 */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <label className="text-sm font-medium text-white/70">里程碑</label>
-            <button className="text-xs text-purple-400 hover:text-purple-300 transition-colors">
+            <label className="text-sm font-pixel-title text-white">里程碑</label>
+            <button className="text-xs text-pixel-accent-purple hover:text-pixel-accent-cyan transition-colors font-pixel-body">
               <i className="ri-add-line" /> 添加
             </button>
           </div>
@@ -99,24 +99,24 @@ const RoomContextPanel = ({ context, onUpdate }) => {
             {displayContext.milestones?.map((milestone) => (
               <div
                 key={milestone.id}
-                className="flex items-center gap-3 p-2 rounded-lg bg-white/5 border border-white/10"
+                className="flex items-center gap-3 p-2 border-4 border-border bg-bg-secondary"
               >
                 <div
-                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                  className={`w-4 h-4 border-4 flex items-center justify-center ${
                     milestone.status === 'done'
-                      ? 'border-emerald-500 bg-emerald-500'
+                      ? 'border-pixel-accent-green bg-pixel-accent-green'
                       : milestone.status === 'inProgress'
-                      ? 'border-blue-500'
-                      : 'border-white/30'
+                      ? 'border-pixel-accent-cyan'
+                      : 'border-border'
                   }`}
                 >
                   {milestone.status === 'done' && <i className="ri-check-line text-xs text-white" />}
                 </div>
                 <span
-                  className={`text-sm ${
+                  className={`text-sm font-pixel-body ${
                     milestone.status === 'done'
-                      ? 'text-white/50 line-through'
-                      : 'text-white/80'
+                      ? 'text-pixel-gray line-through'
+                      : 'text-white'
                   }`}
                 >
                   {milestone.title}
@@ -129,8 +129,8 @@ const RoomContextPanel = ({ context, onUpdate }) => {
         {/* 已做决策 */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <label className="text-sm font-medium text-white/70">已做决策</label>
-            <button className="text-xs text-purple-400 hover:text-purple-300 transition-colors">
+            <label className="text-sm font-pixel-title text-white">已做决策</label>
+            <button className="text-xs text-pixel-accent-purple hover:text-pixel-accent-cyan transition-colors font-pixel-body">
               <i className="ri-add-line" /> 添加
             </button>
           </div>
@@ -138,11 +138,11 @@ const RoomContextPanel = ({ context, onUpdate }) => {
             {displayContext.decisions?.map((decision) => (
               <div
                 key={decision.id}
-                className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20"
+                className="p-3 border-4 border-pixel-accent-green bg-pixel-accent-green/20"
               >
                 <div className="flex items-start justify-between">
-                  <p className="text-sm text-white/70">{decision.content}</p>
-                  <span className="text-xs text-white/40">{decision.date}</span>
+                  <p className="text-sm text-white font-pixel-body">{decision.content}</p>
+                  <span className="text-xs text-pixel-gray font-pixel-body">{decision.date}</span>
                 </div>
               </div>
             ))}

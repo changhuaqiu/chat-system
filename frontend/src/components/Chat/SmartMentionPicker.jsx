@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 
 /**
- * 智能 @提及选择器
+ * 智能 @提及选择器 - 像素风格
  * 显示机器人能力标签，根据上下文关键词推荐排序
  */
 const SmartMentionPicker = ({
@@ -102,8 +102,8 @@ const SmartMentionPicker = ({
 
   if (filteredAgents.length === 0) {
     return (
-      <div className="absolute bottom-full left-0 mb-2 w-72 bg-gray-900/90 backdrop-blur-xl rounded-xl shadow-xl border border-white/10 overflow-hidden z-50">
-        <div className="px-4 py-3 text-center text-white/40 text-sm">
+      <div className="absolute bottom-full left-0 mb-2 w-72 bg-bg-card border-4 border-border shadow-pixel-md overflow-hidden z-50">
+        <div className="px-4 py-3 text-center text-pixel-gray text-sm font-pixel-body">
           未找到匹配的成员
         </div>
       </div>
@@ -111,11 +111,11 @@ const SmartMentionPicker = ({
   }
 
   return (
-    <div className="absolute bottom-full left-0 mb-2 w-80 bg-gray-900/90 backdrop-blur-xl rounded-xl shadow-xl border border-white/10 overflow-hidden z-50 fade-in-scale">
+    <div className="absolute bottom-full left-0 mb-2 w-80 bg-bg-card border-4 border-border shadow-pixel-lg overflow-hidden z-50 fade-in-scale">
       {/* 头部 */}
-      <div className="px-4 py-2 bg-white/5 border-b border-white/10 flex items-center justify-between">
-        <span className="text-xs font-medium text-white/60">提及成员</span>
-        <span className="text-xs text-white/30">{filteredAgents.length} 位成员</span>
+      <div className="px-4 py-2 bg-bg-secondary border-b-4 border-border flex items-center justify-between">
+        <span className="text-xs font-pixel-title text-white">提及成员</span>
+        <span className="text-xs text-pixel-gray font-pixel-body">{filteredAgents.length} 位成员</span>
       </div>
 
       {/* 列表 */}
@@ -124,18 +124,18 @@ const SmartMentionPicker = ({
           <button
             key={agent.id}
             onClick={() => onSelect(agent)}
-            className={`w-full text-left px-3 py-2.5 rounded-lg transition-all ${
+            className={`w-full text-left px-3 py-2.5 transition-colors ${
               idx === selectedIndex
-                ? 'bg-purple-500/20 border border-purple-500/30'
-                : 'hover:bg-white/5 border border-transparent'
+                ? 'bg-pixel-accent-purple/20 border-4 border-pixel-accent-purple'
+                : 'hover:bg-bg-secondary border-4 border-transparent'
             }`}
           >
             <div className="flex items-center gap-3">
               {/* Avatar */}
               <div
-                className={`w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-violet-500 flex items-center justify-center flex-shrink-0`}
+                className={`w-8 h-8 border-4 border-pixel-accent-purple bg-pixel-accent-purple flex items-center justify-center flex-shrink-0`}
               >
-                <span className="text-white text-xs font-bold">
+                <span className="text-white text-xs font-pixel-title">
                   {agent.name?.[0]?.toUpperCase() || 'A'}
                 </span>
               </div>
@@ -143,9 +143,9 @@ const SmartMentionPicker = ({
               {/* 信息 */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-white">{agent.name}</span>
+                  <span className="text-sm font-pixel-title text-white">{agent.name}</span>
                   {agent.canWorkAs?.includes('expert') && (
-                    <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-medium">
+                    <span className="px-1.5 py-0.5 border-2 border-pixel-accent-green bg-pixel-accent-green/20 text-pixel-accent-green text-[10px] font-pixel-body">
                       专家
                     </span>
                   )}
@@ -156,7 +156,7 @@ const SmartMentionPicker = ({
                   {(agent.expertise?.slice(0, 3) || []).map((tag, tagIdx) => (
                     <span
                       key={tagIdx}
-                      className={`${getTagStyle(tag)} px-1.5 py-0.5 rounded text-[10px] font-medium`}
+                      className={`${getTagStyle(tag)} px-1.5 py-0.5 text-[10px] font-pixel-body`}
                     >
                       {tag}
                     </span>
@@ -166,7 +166,7 @@ const SmartMentionPicker = ({
 
               {/* 推荐标识 */}
               {agent.score >= 50 && idx !== selectedIndex && (
-                <i className="ri-star-fill text-yellow-400 text-xs" />
+                <i className="ri-star-fill text-pixel-accent-orange text-xs" />
               )}
             </div>
           </button>
@@ -174,7 +174,7 @@ const SmartMentionPicker = ({
       </div>
 
       {/* 底部提示 */}
-      <div className="px-4 py-2 bg-white/5 border-t border-white/10 flex items-center justify-between text-xs text-white/30">
+      <div className="px-4 py-2 bg-bg-secondary border-t-4 border-border flex items-center justify-between text-xs text-pixel-gray font-pixel-body">
         <span>↑↓ 导航</span>
         <span>Enter 选择</span>
         <span>Esc 关闭</span>

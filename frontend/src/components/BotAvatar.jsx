@@ -8,28 +8,28 @@ const BotAvatar = ({ botId, size = 'md', status = 'online', roleType = 'default'
     xl: 'w-16 h-16 text-lg'
   };
 
-  // 根据角色类型获取配色
+  // 根据角色类型获取配色 - 像素风格
   const roleColors = {
-    developer: 'from-indigo-500 to-purple-500 shadow-glow-sm',
-    designer: 'from-pink-500 to-rose-500 shadow-glow-sm',
-    manager: 'from-amber-500 to-orange-500 shadow-glow-sm',
-    ai: 'from-purple-500 via-violet-500 to-fuchsia-500 shadow-glow-md',
-    default: 'from-cyan-500 to-blue-500 shadow-glow-sm'
+    developer: 'bg-pixel-primary border-pixel-primary-dark',
+    designer: 'bg-pixel-accent-pink border-pink-700',
+    manager: 'bg-pixel-accent-orange border-orange-700',
+    ai: 'bg-pixel-accent-purple border-purple-700',
+    default: 'bg-pixel-accent-cyan border-cyan-700'
   };
 
   // 根据状态获取动画
   const statusAnimations = {
     online: 'online-indicator',
-    thinking: 'glow-pulse',
+    thinking: 'pixel-flicker',
     idle: '',
-    excited: 'glow-pulse'
+    excited: 'pixel-shake'
   };
 
   const statusIndicators = {
-    online: 'bg-emerald-500',
-    thinking: 'bg-amber-500',
-    idle: 'bg-gray-500',
-    excited: 'bg-purple-500'
+    online: 'bg-pixel-accent-green',
+    thinking: 'bg-pixel-accent-orange',
+    idle: 'bg-pixel-gray',
+    excited: 'bg-pixel-accent-purple'
   };
 
   // 使用 botId 生成一致的颜色索引
@@ -41,32 +41,27 @@ const BotAvatar = ({ botId, size = 'md', status = 'online', roleType = 'default'
 
   return (
     <div className="relative inline-block">
-      {/* 动态光晕效果 */}
+      {/* Avatar 主体 - 像素风格 */}
       <div
-        className={`absolute inset-0 rounded-full bg-gradient-to-br ${roleColors[selectedRole]} blur-md opacity-60 ${statusAnimations[status]}`}
-      />
-
-      {/* Avatar 主体 */}
-      <div
-        className={`${sizeClasses[size]} rounded-full bg-gradient-to-br ${roleColors[selectedRole]}
-          flex items-center justify-center flex-shrink-0 relative z-10 shadow-lg
-          transition-transform duration-300 hover:scale-110`}
+        className={`${sizeClasses[size]} ${roleColors[selectedRole]}
+          flex items-center justify-center flex-shrink-0 relative z-10 border-4 shadow-pixel-sm
+          transition-transform duration-100 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-pixel-md`}
       >
-        <span className="text-white font-bold tracking-wider">{displayName}</span>
+        <span className="text-white font-pixel-title tracking-wider">{displayName}</span>
       </div>
 
       {/* 状态指示器 */}
       {status && status !== 'idle' && (
         <div
           className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 ${statusIndicators[status]}
-            rounded-full border-2 border-gray-900 ${status === 'online' ? 'online-indicator' : ''}`}
+            border-2 border-bg-primary ${status === 'online' ? 'online-indicator' : ''}`}
           title={status}
         />
       )}
 
-      {/* 思考中光环 */}
+      {/* 思考中效果 */}
       {status === 'thinking' && (
-        <div className="absolute inset-0 rounded-full border-2 border-amber-400/50 pulse-ring" />
+        <div className="absolute inset-0 border-4 border-pixel-accent-orange animate-pulse" />
       )}
     </div>
   );

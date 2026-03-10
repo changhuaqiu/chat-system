@@ -1,15 +1,15 @@
 import React from 'react';
 
 /**
- * 协作指示器
+ * 协作指示器 - 像素风格
  * 显示机器人思考中、并发响应等状态
  */
 const CollaborationIndicator = ({ thinkingBots = [], respondingBots = [], taskChain = [] }) => {
   return (
-    <div className="glass-panel rounded-xl p-4 border border-white/10">
+    <div className="bg-bg-card border-4 border-border p-4">
       <div className="flex items-center gap-2 mb-3">
-        <i className="ri-radar-line text-purple-400" />
-        <span className="text-sm font-medium text-white/80">协作状态</span>
+        <i className="ri-radar-line text-pixel-accent-purple" />
+        <span className="text-sm font-pixel-title text-white">协作状态</span>
       </div>
 
       {/* 思考中的机器人 */}
@@ -17,22 +17,22 @@ const CollaborationIndicator = ({ thinkingBots = [], respondingBots = [], taskCh
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-2">
             <div className="flex items-center gap-1">
-              <div className="typing-dot w-2 h-2 bg-amber-400 rounded-full" />
-              <div className="typing-dot w-2 h-2 bg-amber-400 rounded-full delay-100" />
-              <div className="typing-dot w-2 h-2 bg-amber-400 rounded-full delay-200" />
+              <div className="w-2 h-2 bg-pixel-accent-orange animate-pulse" />
+              <div className="w-2 h-2 bg-pixel-accent-orange animate-pulse delay-100" />
+              <div className="w-2 h-2 bg-pixel-accent-orange animate-pulse delay-200" />
             </div>
-            <span className="text-xs text-amber-400">思考中</span>
+            <span className="text-xs text-pixel-accent-orange font-pixel-body">思考中</span>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             {thinkingBots.map((bot) => (
               <div
                 key={bot.id}
-                className="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center gap-2"
+                className="px-3 py-1.5 border-4 border-pixel-accent-orange bg-pixel-accent-orange/20 flex items-center gap-2"
               >
-                <div className="w-5 h-5 rounded bg-gradient-to-br from-purple-500 to-violet-500 flex items-center justify-center text-xs text-white">
+                <div className="w-5 h-5 border-4 border-pixel-accent-purple bg-pixel-accent-purple flex items-center justify-center text-xs text-white">
                   {bot.name?.[0]?.toUpperCase() || 'B'}
                 </div>
-                <span className="text-xs text-amber-300">{bot.name}</span>
+                <span className="text-xs text-pixel-accent-orange font-pixel-body">{bot.name}</span>
               </div>
             ))}
           </div>
@@ -43,19 +43,19 @@ const CollaborationIndicator = ({ thinkingBots = [], respondingBots = [], taskCh
       {respondingBots.length > 0 && (
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-2">
-            <i className="ri-send-plane-fill text-emerald-400 text-xs" />
-            <span className="text-xs text-emerald-400">正在发送</span>
+            <i className="ri-send-plane-fill text-pixel-accent-green text-xs" />
+            <span className="text-xs text-pixel-accent-green font-pixel-body">正在发送</span>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             {respondingBots.map((bot) => (
               <div
                 key={bot.id}
-                className="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2"
+                className="px-3 py-1.5 border-4 border-pixel-accent-green bg-pixel-accent-green/20 flex items-center gap-2"
               >
-                <div className="w-5 h-5 rounded bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-xs text-white">
+                <div className="w-5 h-5 border-4 border-pixel-accent-green bg-pixel-accent-green flex items-center justify-center text-xs text-white">
                   {bot.name?.[0]?.toUpperCase() || 'B'}
                 </div>
-                <span className="text-xs text-emerald-300">{bot.name}</span>
+                <span className="text-xs text-pixel-accent-green font-pixel-body">{bot.name}</span>
               </div>
             ))}
           </div>
@@ -66,40 +66,40 @@ const CollaborationIndicator = ({ thinkingBots = [], respondingBots = [], taskCh
       {taskChain.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <i className="ri-flow-chart text-blue-400 text-xs" />
-            <span className="text-xs text-blue-400">任务链路</span>
+            <i className="ri-flow-chart text-pixel-accent-cyan text-xs" />
+            <span className="text-xs text-pixel-accent-cyan font-pixel-body">任务链路</span>
           </div>
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-thin">
             {taskChain.map((step, idx) => (
               <React.Fragment key={step.id}>
                 {idx > 0 && (
-                  <i className="ri-arrow-right-s-line text-white/30 text-xs flex-shrink-0" />
+                  <i className="ri-arrow-right-s-line text-pixel-gray text-xs flex-shrink-0" />
                 )}
                 <div
-                  className={`px-3 py-1.5 rounded-lg border flex-shrink-0 flex items-center gap-2 ${
+                  className={`px-3 py-1.5 border-4 flex-shrink-0 flex items-center gap-2 ${
                     step.status === 'completed'
-                      ? 'bg-emerald-500/10 border-emerald-500/30'
+                      ? 'border-pixel-accent-green bg-pixel-accent-green/20'
                       : step.status === 'current'
-                      ? 'bg-blue-500/10 border-blue-500/30 animate-pulse'
-                      : 'bg-white/5 border-white/10'
+                      ? 'border-pixel-accent-cyan bg-pixel-accent-cyan/20 animate-pulse'
+                      : 'border-border bg-bg-secondary'
                   }`}
                 >
                   <div
-                    className={`w-5 h-5 rounded flex items-center justify-center text-xs ${
+                    className={`w-5 h-5 border-4 flex items-center justify-center text-xs ${
                       step.assignee?.type === 'coordinator'
-                        ? 'bg-gradient-to-br from-amber-500 to-orange-500'
-                        : 'bg-gradient-to-br from-purple-500 to-violet-500'
+                        ? 'border-pixel-accent-orange bg-pixel-accent-orange'
+                        : 'border-pixel-accent-purple bg-pixel-accent-purple'
                     } text-white`}
                   >
                     {step.assignee?.name?.[0]?.toUpperCase() || 'S'}
                   </div>
                   <span
-                    className={`text-xs ${
+                    className={`text-xs font-pixel-body ${
                       step.status === 'completed'
-                        ? 'text-emerald-300'
+                        ? 'text-pixel-accent-green'
                         : step.status === 'current'
-                        ? 'text-blue-300'
-                        : 'text-white/50'
+                        ? 'text-pixel-accent-cyan'
+                        : 'text-pixel-gray'
                     }`}
                   >
                     {step.action}
@@ -114,8 +114,8 @@ const CollaborationIndicator = ({ thinkingBots = [], respondingBots = [], taskCh
       {/* 空状态 */}
       {thinkingBots.length === 0 && respondingBots.length === 0 && taskChain.length === 0 && (
         <div className="text-center py-4">
-          <i className="ri-checkbox-circle-line text-emerald-400 text-2xl mb-2" />
-          <p className="text-sm text-white/50">所有任务已完成</p>
+          <i className="ri-checkbox-circle-line text-pixel-accent-green text-2xl mb-2" />
+          <p className="text-sm text-pixel-gray font-pixel-body">所有任务已完成</p>
         </div>
       )}
     </div>

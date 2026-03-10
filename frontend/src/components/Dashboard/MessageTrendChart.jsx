@@ -1,6 +1,5 @@
 /**
- * Message Trend Chart Component
- * Displays message count trends over time using Recharts
+ * Message Trend Chart Component - 像素风格
  */
 
 import React from 'react';
@@ -18,10 +17,10 @@ import {
 const MessageTrendChart = ({ data = [], loading = false }) => {
   if (loading) {
     return (
-      <div className="glass-panel p-6 rounded-2xl border border-white/10">
-        <h3 className="text-lg font-semibold text-white mb-4">消息趋势</h3>
+      <div className="bg-bg-card p-6 border-4 border-border">
+        <h3 className="text-lg font-pixel-title text-white mb-4">消息趋势</h3>
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+          <div className="animate-spin w-8 h-8 border-4 border-pixel-primary border-t-transparent"></div>
         </div>
       </div>
     );
@@ -29,11 +28,11 @@ const MessageTrendChart = ({ data = [], loading = false }) => {
 
   if (!data || data.length === 0) {
     return (
-      <div className="glass-panel p-6 rounded-2xl border border-white/10">
-        <h3 className="text-lg font-semibold text-white mb-4">消息趋势</h3>
-        <div className="flex flex-col items-center justify-center h-64 text-white/40">
+      <div className="bg-bg-card p-6 border-4 border-border">
+        <h3 className="text-lg font-pixel-title text-white mb-4">消息趋势</h3>
+        <div className="flex flex-col items-center justify-center h-64 text-pixel-gray">
           <span className="text-3xl mb-2">📊</span>
-          <p>暂无趋势数据</p>
+          <p className="font-pixel-body">暂无趋势数据</p>
         </div>
       </div>
     );
@@ -42,10 +41,10 @@ const MessageTrendChart = ({ data = [], loading = false }) => {
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="glass-panel p-3 rounded-lg border border-white/10">
-          <p className="text-sm font-medium text-white">{label}</p>
+        <div className="bg-bg-card p-3 border-4 border-border">
+          <p className="text-sm font-pixel-title text-white">{label}</p>
           {payload.map((entry, index) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
+            <p key={index} className="text-sm font-pixel-body" style={{ color: entry.color }}>
               {entry.name}: {entry.value.toLocaleString()}
             </p>
           ))}
@@ -56,10 +55,10 @@ const MessageTrendChart = ({ data = [], loading = false }) => {
   };
 
   return (
-    <div className="glass-panel p-6 rounded-2xl border border-white/10">
+    <div className="bg-bg-card p-6 border-4 border-border">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-white">消息趋势</h3>
-        <span className="text-xs text-white/40">近 7 天</span>
+        <h3 className="text-lg font-pixel-title text-white">消息趋势</h3>
+        <span className="text-xs text-pixel-gray font-pixel-body">近 7 天</span>
       </div>
       <ResponsiveContainer width="100%" height={280}>
         <AreaChart
@@ -72,21 +71,21 @@ const MessageTrendChart = ({ data = [], loading = false }) => {
               <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="colorBots" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+              <stop offset="5%" stopColor="#00ff88" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#00ff88" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
           <XAxis
             dataKey="date"
-            tick={{ fontSize: 12, fill: 'rgba(255,255,255,0.6)' }}
+            tick={{ fontSize: 12, fill: '#6b7280', fontFamily: 'VT323' }}
             tickLine={false}
-            axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+            axisLine={{ stroke: '#374151' }}
           />
           <YAxis
-            tick={{ fontSize: 12, fill: 'rgba(255,255,255,0.6)' }}
+            tick={{ fontSize: 12, fill: '#6b7280', fontFamily: 'VT323' }}
             tickLine={false}
-            axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+            axisLine={{ stroke: '#374151' }}
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend />
@@ -103,7 +102,7 @@ const MessageTrendChart = ({ data = [], loading = false }) => {
             type="monotone"
             dataKey="botResponses"
             name="AI 回复"
-            stroke="#10b981"
+            stroke="#00ff88"
             strokeWidth={2}
             fillOpacity={1}
             fill="url(#colorBots)"

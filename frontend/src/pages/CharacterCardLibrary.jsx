@@ -10,20 +10,14 @@ function CharacterCardLibrary() {
   const [characters, setCharacters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterCategory, setFilterCategory] = useState('all'); // all, development, design, management
-  const [viewMode, setViewMode] = useState('grid'); // grid, list
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [viewMode, setViewMode] = useState('grid');
   const [selectedCharacter, setSelectedCharacter] = useState(null);
 
-  // 加载角色卡列表
   useEffect(() => {
     const loadCharacters = async () => {
       try {
         setLoading(true);
-        // TODO: 调用实际 API
-        // const data = await apiService.getCharacterCards();
-        // setCharacters(data.cards || []);
-
-        // 模拟数据
         setCharacters([
           {
             id: 'dev-backend',
@@ -76,17 +70,14 @@ function CharacterCardLibrary() {
     loadCharacters();
   }, []);
 
-  // 筛选和搜索
   const filteredCharacters = useMemo(() => {
     return characters.filter((char) => {
-      // 搜索过滤
       const matchesSearch =
         searchQuery === '' ||
         char.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         char.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         char.expertise?.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
 
-      // 类别过滤
       const matchesCategory = filterCategory === 'all' ||
         (filterCategory === 'development' && char.expertise?.some(t => ['coding', 'api_design', 'database'].includes(t))) ||
         (filterCategory === 'design' && char.expertise?.some(t => ['design', 'ui', 'prototyping'].includes(t))) ||
@@ -119,75 +110,74 @@ function CharacterCardLibrary() {
   return (
     <Layout>
       <div className="flex-1 flex overflow-hidden">
-        {/* 左侧：角色卡列表 */}
-        <div className="w-96 flex flex-col border-r border-white/5">
-          {/* 顶部操作栏 */}
-          <div className="p-6 border-b border-white/5">
+        {/* 左侧：角色卡列表 - 像素风格 */}
+        <div className="w-96 flex flex-col border-r-4 border-border bg-bg-secondary">
+          <div className="p-6 border-b-4 border-border">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h1 className="text-xl font-bold text-white">角色卡管理</h1>
-                <p className="text-sm text-white/40 mt-1">管理机器人的人格设定</p>
+                <h1 className="text-lg font-pixel-title text-white">角色卡管理</h1>
+                <p className="text-sm text-pixel-gray mt-1 font-pixel-body">管理机器人的人格设定</p>
               </div>
             </div>
 
             {/* 搜索和创建 */}
             <div className="flex items-center gap-3">
               <div className="relative flex-1">
-                <i className="ri-search-line absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
+                <i className="ri-search-line absolute left-4 top-1/2 -translate-y-1/2 text-pixel-gray" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="搜索角色卡..."
-                  className="w-full pl-11 pr-4 py-2.5 input-field rounded-xl text-white placeholder-white/30 focus:outline-none"
+                  className="w-full pl-11 pr-4 py-2.5 bg-bg-input border-4 border-border text-white placeholder-pixel-gray focus:outline-none focus:border-pixel-border-highlight transition-colors font-pixel-body"
                 />
               </div>
               <button
                 onClick={handleCreateCharacter}
-                className="p-2.5 btn-primary rounded-xl"
+                className="p-2.5 btn-primary"
               >
                 <i className="ri-add-line text-white text-xl" />
               </button>
             </div>
 
-            {/* 类别筛选 */}
+            {/* 类别筛选 - 像素风格 */}
             <div className="flex items-center gap-2 mt-4">
               <button
                 onClick={() => setFilterCategory('all')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                className={`px-3 py-1.5 text-xs font-pixel-title transition-colors ${
                   filterCategory === 'all'
-                    ? 'bg-white/10 text-white'
-                    : 'text-white/50 hover:bg-white/5'
+                    ? 'bg-pixel-primary text-white border-4 border-pixel-primary-dark'
+                    : 'text-pixel-gray border-4 border-transparent hover:border-border'
                 }`}
               >
                 全部
               </button>
               <button
                 onClick={() => setFilterCategory('development')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                className={`px-3 py-1.5 text-xs font-pixel-title transition-colors ${
                   filterCategory === 'development'
-                    ? 'bg-white/10 text-white'
-                    : 'text-white/50 hover:bg-white/5'
+                    ? 'bg-pixel-primary text-white border-4 border-pixel-primary-dark'
+                    : 'text-pixel-gray border-4 border-transparent hover:border-border'
                 }`}
               >
                 开发
               </button>
               <button
                 onClick={() => setFilterCategory('design')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                className={`px-3 py-1.5 text-xs font-pixel-title transition-colors ${
                   filterCategory === 'design'
-                    ? 'bg-white/10 text-white'
-                    : 'text-white/50 hover:bg-white/5'
+                    ? 'bg-pixel-primary text-white border-4 border-pixel-primary-dark'
+                    : 'text-pixel-gray border-4 border-transparent hover:border-border'
                 }`}
               >
                 设计
               </button>
               <button
                 onClick={() => setFilterCategory('management')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                className={`px-3 py-1.5 text-xs font-pixel-title transition-colors ${
                   filterCategory === 'management'
-                    ? 'bg-white/10 text-white'
-                    : 'text-white/50 hover:bg-white/5'
+                    ? 'bg-pixel-primary text-white border-4 border-pixel-primary-dark'
+                    : 'text-pixel-gray border-4 border-transparent hover:border-border'
                 }`}
               >
                 管理
@@ -198,16 +188,16 @@ function CharacterCardLibrary() {
             <div className="flex items-center gap-2 mt-4">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-lg transition-all ${
-                  viewMode === 'grid' ? 'bg-white/10 text-white' : 'text-white/50'
+                className={`p-2 transition-colors ${
+                  viewMode === 'grid' ? 'bg-pixel-primary text-white border-4 border-pixel-primary-dark' : 'text-pixel-gray border-4 border-transparent'
                 }`}
               >
                 <i className="ri-grid-line" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 rounded-lg transition-all ${
-                  viewMode === 'list' ? 'bg-white/10 text-white' : 'text-white/50'
+                className={`p-2 transition-colors ${
+                  viewMode === 'list' ? 'bg-pixel-primary text-white border-4 border-pixel-primary-dark' : 'text-pixel-gray border-4 border-transparent'
                 }`}
               >
                 <i className="ri-list" />
@@ -216,11 +206,11 @@ function CharacterCardLibrary() {
           </div>
 
           {/* 角色卡列表 */}
-          <div className="flex-1 overflow-y-auto scrollbar-thin p-4">
+          <div className="flex-1 overflow-y-auto pixel-scrollbar p-4">
             {loading ? (
               <div className="space-y-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="character-card p-5 rounded-2xl skeleton h-24" />
+                  <div key={i} className="character-card p-5 border-4 border-border bg-bg-card skeleton h-24" />
                 ))}
               </div>
             ) : viewMode === 'grid' ? (
@@ -247,31 +237,29 @@ function CharacterCardLibrary() {
 
             {filteredCharacters.length === 0 && !loading && (
               <div className="text-center py-12">
-                <i className="ri-folder-unknow-line text-4xl text-white/30 mb-4" />
-                <p className="text-white/50">暂无角色卡</p>
+                <i className="ri-folder-unknow-line text-4xl text-pixel-gray mb-4" />
+                <p className="text-pixel-gray font-pixel-body">暂无角色卡</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* 右侧：详情/操作面板 */}
-        <div className="flex-1 flex flex-col">
+        {/* 右侧：详情/操作面板 - 像素风格 */}
+        <div className="flex-1 flex flex-col bg-bg-primary">
           {selectedCharacter ? (
             <>
               {/* 顶部操作栏 */}
-              <div className="glass-panel border-b border-white/5 px-8 py-5">
+              <div className="bg-bg-secondary border-b-4 border-border px-8 py-5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <BotAvatar
-                      botId={selectedCharacter.id}
-                      size="lg"
-                      status={selectedCharacter.status === 'active' ? 'online' : 'idle'}
-                    />
+                    <div className="w-12 h-12 bg-pixel-primary border-4 border-pixel-primary-dark flex items-center justify-center text-white font-pixel-title shadow-pixel-sm">
+                      {selectedCharacter.avatar}
+                    </div>
                     <div>
-                      <h2 className="text-lg font-semibold text-white">
+                      <h2 className="text-lg font-pixel-title text-white">
                         {selectedCharacter.name}
                       </h2>
-                      <p className="text-sm text-white/40 mt-1">
+                      <p className="text-sm text-pixel-gray mt-1 font-pixel-body">
                         最后更新：2026-03-09
                       </p>
                     </div>
@@ -279,14 +267,14 @@ function CharacterCardLibrary() {
                   <div className="flex items-center gap-3">
                     <button
                       onClick={handleTestCharacter}
-                      className="px-4 py-2 btn-secondary text-white/70 rounded-xl text-sm font-medium flex items-center gap-2"
+                      className="px-4 py-2 btn-secondary text-pixel-gray text-sm font-pixel-title flex items-center gap-2"
                     >
                       <i className="ri-play-line" />
                       测试角色
                     </button>
                     <button
                       onClick={handleEditCharacter}
-                      className="px-4 py-2 btn-primary text-white rounded-xl text-sm font-medium flex items-center gap-2"
+                      className="px-4 py-2 btn-primary text-white text-sm font-pixel-title flex items-center gap-2"
                     >
                       <i className="ri-edit-line" />
                       编辑
@@ -296,26 +284,26 @@ function CharacterCardLibrary() {
               </div>
 
               {/* 详情内容 */}
-              <div className="flex-1 overflow-y-auto scrollbar-thin p-8">
+              <div className="flex-1 overflow-y-auto pixel-scrollbar p-8">
                 <div className="max-w-2xl">
                   {/* 描述 */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-white/70 mb-2">
+                    <label className="block text-sm font-pixel-title text-pixel-gray mb-2">
                       角色描述
                     </label>
-                    <p className="text-white/80">{selectedCharacter.description}</p>
+                    <p className="text-white font-pixel-body">{selectedCharacter.description}</p>
                   </div>
 
                   {/* 专长领域 */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-white/70 mb-2">
+                    <label className="block text-sm font-pixel-title text-pixel-gray mb-2">
                       专长领域
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {selectedCharacter.expertise?.map((tag, idx) => (
                         <span
                           key={idx}
-                          className="tag-expertise px-3 py-1.5 rounded-xl text-sm font-medium"
+                          className="tag-expertise px-3 py-1.5 text-sm font-pixel-body"
                         >
                           {tag}
                         </span>
@@ -325,14 +313,14 @@ function CharacterCardLibrary() {
 
                   {/* 可担任角色 */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-white/70 mb-2">
+                    <label className="block text-sm font-pixel-title text-pixel-gray mb-2">
                       可担任角色
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {selectedCharacter.canWorkAs?.map((role, idx) => (
                         <span
                           key={idx}
-                          className="px-3 py-1.5 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-300 text-sm font-medium"
+                          className="px-3 py-1.5 bg-pixel-accent-purple/20 text-pixel-accent-purple text-sm font-pixel-body border-2 border-pixel-accent-purple"
                         >
                           {role}
                         </span>
@@ -343,14 +331,14 @@ function CharacterCardLibrary() {
                   {/* 协作技能 */}
                   {selectedCharacter.collaborationSkills && (
                     <div>
-                      <label className="block text-sm font-medium text-white/70 mb-2">
+                      <label className="block text-sm font-pixel-title text-pixel-gray mb-2">
                         协作技能
                       </label>
                       <div className="flex flex-wrap gap-2">
                         {selectedCharacter.collaborationSkills.map((skill, idx) => (
                           <span
                             key={idx}
-                            className="tag-skill px-3 py-1.5 rounded-xl text-sm font-medium"
+                            className="tag-skill px-3 py-1.5 text-sm font-pixel-body"
                           >
                             {skill}
                           </span>
@@ -364,8 +352,8 @@ function CharacterCardLibrary() {
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
-                <i className="ri-contact-card-line text-6xl text-white/20 mb-4" />
-                <p className="text-white/40">选择一个角色卡查看详情</p>
+                <i className="ri-contact-card-line text-6xl text-pixel-gray/50 mb-4" />
+                <p className="text-pixel-gray font-pixel-body">选择一个角色卡查看详情</p>
               </div>
             </div>
           )}

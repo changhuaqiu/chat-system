@@ -109,13 +109,13 @@ const MessageBubble = ({
         {/* Sender Info */}
         {!isOwn && showAvatar && (
           <div className="flex items-center gap-2 mb-1 ml-1">
-            <span className="text-sm font-medium text-white/90">{senderName}</span>
+            <span className="text-sm font-pixel-body text-white">{senderName}</span>
             {senderType === 'ai' && (
-              <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-medium">
+              <span className="px-2 py-0.5 bg-pixel-accent-green/20 text-pixel-accent-green text-xs font-pixel-title border-2 border-pixel-accent-green">
                 AI
               </span>
             )}
-            <span className="text-xs text-white/30">
+            <span className="text-xs text-pixel-gray font-pixel-body">
               {message.timestamp ? new Date(message.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}
             </span>
           </div>
@@ -124,8 +124,8 @@ const MessageBubble = ({
         {/* Reply Context */}
         {repliedMessage && (
           <div
-            className={`mb-2 text-xs px-4 py-2 rounded-xl cursor-pointer hover:bg-white/10 transition-all border border-white/10 w-fit max-w-full flex items-center gap-2
-              ${isOwn ? 'mr-1 rounded-br-none bg-white/5' : 'ml-1 rounded-bl-none bg-white/5'}
+            className={`mb-2 text-xs px-4 py-2 cursor-pointer hover:bg-bg-card transition-colors border-4 border-border w-fit max-w-full flex items-center gap-2
+              ${isOwn ? 'mr-1' : 'ml-1'}
             `}
             onClick={() => {
                 const el = document.getElementById(`msg-${repliedMessage.id}`);
@@ -134,18 +134,18 @@ const MessageBubble = ({
                 setTimeout(() => el?.classList.remove('message-highlight'), 2000);
             }}
           >
-            <div className="w-0.5 h-8 bg-gradient-to-b from-purple-500/50 to-transparent rounded-full"></div>
+            <div className="w-1 h-8 bg-pixel-accent-purple"></div>
             <div className="flex flex-col truncate">
-                <span className="font-medium text-xs text-white/50">Replying to {repliedMessage.senderName || repliedMessage.sender}</span>
-                <span className="truncate max-w-[200px] text-white/70">{repliedMessage.content}</span>
+                <span className="font-pixel-title text-xs text-pixel-gray">Replying to {repliedMessage.senderName || repliedMessage.sender}</span>
+                <span className="truncate max-w-[200px] text-white/70 font-pixel-body">{repliedMessage.content}</span>
             </div>
           </div>
         )}
 
-        {/* Message Bubble */}
+        {/* Message Bubble - 像素风格 */}
         <div
           id={`msg-${message.id}`}
-          className={`relative px-5 py-4 shadow-lg transition-all rounded-2xl ${isOwn ? 'rounded-br-sm' : 'rounded-bl-sm'}
+          className={`relative px-5 py-4 transition-all
             ${getBubbleStyle()}
             ${message.messageType === 'image' ? 'p-1 bg-transparent border-0 shadow-none' : ''}
           `}
@@ -156,14 +156,14 @@ const MessageBubble = ({
 
           {/* Quick Actions */}
           {senderType === 'ai' && !isOwn && (
-            <div className="mt-3 pt-3 border-t border-white/10 flex items-center gap-3">
-              <button className="text-xs text-white/40 hover:text-white/70 transition-colors flex items-center gap-1">
+            <div className="mt-3 pt-3 border-t-4 border-border flex items-center gap-3">
+              <button className="text-xs text-pixel-gray hover:text-white transition-colors flex items-center gap-1 font-pixel-body">
                 <i className="ri-thumb-up-line"></i> 收到
               </button>
-              <button className="text-xs text-white/40 hover:text-white/70 transition-colors flex items-center gap-1">
+              <button className="text-xs text-pixel-gray hover:text-white transition-colors flex items-center gap-1 font-pixel-body">
                 <i className="ri-chat-1-line"></i> 追问
               </button>
-              <button className="text-xs text-white/40 hover:text-white/70 transition-colors flex items-center gap-1">
+              <button className="text-xs text-pixel-gray hover:text-white transition-colors flex items-center gap-1 font-pixel-body">
                 <i className="ri-share-forward-line"></i> 分享
               </button>
             </div>
@@ -177,14 +177,14 @@ const MessageBubble = ({
               <button
                 key={emoji}
                 onClick={() => apiService.toggleReaction(message.id, 'user', emoji)}
-                className={`px-2 py-1 rounded-full text-xs border flex items-center gap-1.5 transition-all shadow-sm
+                className={`px-2 py-1 text-xs border-4 flex items-center gap-1.5 transition-colors
                   ${users.find(u => u.user_id === 'user')
-                    ? 'bg-purple-500/20 border-purple-500/50 text-purple-300 scale-105'
-                    : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'
+                    ? 'bg-pixel-accent-purple/20 border-pixel-accent-purple text-pixel-accent-purple'
+                    : 'bg-bg-card border-border text-pixel-gray hover:border-pixel-border-light'
                   }`}
               >
                 <span>{emoji}</span>
-                <span className="font-medium">{users.length}</span>
+                <span className="font-pixel-title">{users.length}</span>
               </button>
             ))}
           </div>
@@ -192,7 +192,7 @@ const MessageBubble = ({
 
         {/* Timestamp for own messages */}
         {isOwn && (
-          <span className="text-xs text-white/30 mt-1 mr-1 text-right">
+          <span className="text-xs text-pixel-gray mt-1 mr-1 text-right font-pixel-body">
             {message.timestamp ? new Date(message.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}
           </span>
         )}
@@ -204,7 +204,7 @@ const MessageBubble = ({
       >
         <button
           onClick={() => onReply(message)}
-          className="p-2 rounded-xl bg-white/10 text-white/60 hover:text-white hover:bg-white/20 transition-all backdrop-blur-sm border border-white/10"
+          className="p-2 bg-bg-card text-pixel-gray hover:text-white hover:bg-bg-secondary transition-colors border-4 border-border"
           title="Reply"
         >
           <i className="ri-reply-line text-lg"></i>
@@ -212,15 +212,15 @@ const MessageBubble = ({
 
         {/* Quick Reaction */}
         <div className="relative group/emoji">
-          <button className="p-2 rounded-xl bg-white/10 text-white/60 hover:text-yellow-400 hover:bg-white/20 transition-all backdrop-blur-sm border border-white/10">
+          <button className="p-2 bg-bg-card text-pixel-gray hover:text-pixel-accent-orange hover:bg-bg-secondary transition-colors border-4 border-border">
             <i className="ri-emotion-line text-lg"></i>
           </button>
-          <div className="absolute bottom-full mb-2 hidden group-hover/emoji:flex bg-gray-900/90 backdrop-blur-xl shadow-xl rounded-xl px-3 py-2 border border-white/10 z-10 left-1/2 transform -translate-x-1/2">
+          <div className="absolute bottom-full mb-2 hidden group-hover/emoji:flex bg-bg-card shadow-pixel-lg px-3 py-2 border-4 border-border z-10 left-1/2 transform -translate-x-1/2">
             {['👍', '❤️', '😂', '😮', '😢', '🙏'].map(emoji => (
               <button
                 key={emoji}
                 onClick={() => apiService.toggleReaction(message.id, 'user', emoji)}
-                className="p-2 hover:bg-white/10 rounded-full transition-all text-xl transform hover:scale-125 duration-200"
+                className="p-2 hover:bg-bg-secondary transition-colors text-xl"
               >
                 {emoji}
               </button>

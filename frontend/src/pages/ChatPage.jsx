@@ -424,8 +424,8 @@ function ChatPage() {
   if (loading) {
       return (
           <Layout>
-              <div className="flex items-center justify-center h-full">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+              <div className="flex items-center justify-center h-full bg-bg-primary">
+                  <div className="animate-spin w-12 h-12 border-4 border-pixel-primary border-t-transparent"></div>
               </div>
           </Layout>
       );
@@ -433,7 +433,7 @@ function ChatPage() {
 
   return (
     <Layout>
-        <div className="flex h-full bg-gradient-bg overflow-hidden">
+        <div className="flex h-full bg-bg-primary overflow-hidden">
             <ChatSidebar
                 rooms={rooms}
                 currentRoomId={roomId || 'general'}

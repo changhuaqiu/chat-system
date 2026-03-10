@@ -2,7 +2,7 @@ import React from 'react';
 import BotAvatar from '../BotAvatar';
 
 /**
- * 可拖拽角色卡组件
+ * 可拖拽角色卡组件 - 像素风格
  * 用于拖拽式角色分配
  */
 const DraggableCard = ({ character, onDragStart, onDragEnd }) => {
@@ -27,9 +27,9 @@ const DraggableCard = ({ character, onDragStart, onDragEnd }) => {
       draggable
       onDragStart={handleDragStart}
       onDragEnd={onDragEnd}
-      className={`character-card p-4 rounded-xl cursor-grab active:cursor-grabbing
-        hover:border-purple-500/50 hover:shadow-[0_8px_30px_rgba(99,102,241,0.2)]
-        transition-all duration-300 bg-white/5 border border-white/10`}
+      className={`character-card p-4 cursor-grab active:cursor-grabbing
+        hover:border-pixel-accent-purple hover:shadow-pixel-md
+        transition-colors bg-bg-secondary border-4 border-border`}
     >
       <div className="flex items-center gap-3">
         {/* Avatar */}
@@ -37,8 +37,8 @@ const DraggableCard = ({ character, onDragStart, onDragEnd }) => {
 
         {/* 信息 */}
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-medium text-white truncate">{name}</h4>
-          <p className="text-xs text-white/40 truncate">{description || '暂无描述'}</p>
+          <h4 className="text-sm font-pixel-title text-white truncate">{name}</h4>
+          <p className="text-xs text-pixel-gray truncate font-pixel-body">{description || '暂无描述'}</p>
 
           {/* 可担任角色 */}
           {canWorkAs && canWorkAs.length > 0 && (
@@ -46,7 +46,7 @@ const DraggableCard = ({ character, onDragStart, onDragEnd }) => {
               {canWorkAs.map((role, idx) => (
                 <span
                   key={idx}
-                  className="px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-medium"
+                  className="px-1.5 py-0.5 border-2 border-pixel-accent-purple bg-pixel-accent-purple/20 text-pixel-accent-purple text-[10px] font-pixel-body"
                 >
                   {role}
                 </span>
@@ -56,7 +56,7 @@ const DraggableCard = ({ character, onDragStart, onDragEnd }) => {
         </div>
 
         {/* 拖拽指示器 */}
-        <div className="flex-shrink-0 text-white/30">
+        <div className="flex-shrink-0 text-pixel-gray">
           <i className="ri-drag-move-line text-lg" />
         </div>
       </div>
