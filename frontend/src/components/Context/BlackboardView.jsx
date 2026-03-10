@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 /**
- * 黑板可视化组件
+ * 黑板可视化组件 - 像素风格
  * 分区展示 API 设计、数据库设计、决策等内容
  */
 const BlackboardView = ({ sections = [], onSectionUpdate }) => {
@@ -13,7 +13,9 @@ const BlackboardView = ({ sections = [], onSectionUpdate }) => {
       id: 'api-design',
       name: 'API 设计',
       icon: 'ri-api-line',
-      color: 'from-blue-500 to-cyan-500',
+      color: 'border-pixel-accent-cyan bg-pixel-accent-cyan',
+      bgColor: 'bg-pixel-accent-cyan/20',
+      borderColor: 'border-pixel-accent-cyan',
       content: '',
       updatedAt: null
     },
@@ -21,7 +23,9 @@ const BlackboardView = ({ sections = [], onSectionUpdate }) => {
       id: 'database-design',
       name: '数据库设计',
       icon: 'ri-database-2-line',
-      color: 'from-purple-500 to-violet-500',
+      color: 'border-pixel-accent-purple bg-pixel-accent-purple',
+      bgColor: 'bg-pixel-accent-purple/20',
+      borderColor: 'border-pixel-accent-purple',
       content: '',
       updatedAt: null
     },
@@ -29,7 +33,9 @@ const BlackboardView = ({ sections = [], onSectionUpdate }) => {
       id: 'decisions',
       name: '已做决策',
       icon: 'ri-checkbox-circle-line',
-      color: 'from-emerald-500 to-teal-500',
+      color: 'border-pixel-accent-green bg-pixel-accent-green',
+      bgColor: 'bg-pixel-accent-green/20',
+      borderColor: 'border-pixel-accent-green',
       content: '',
       updatedAt: null
     },
@@ -37,7 +43,9 @@ const BlackboardView = ({ sections = [], onSectionUpdate }) => {
       id: 'notes',
       name: '讨论笔记',
       icon: 'ri-sticky-note-line',
-      color: 'from-amber-500 to-orange-500',
+      color: 'border-pixel-accent-orange bg-pixel-accent-orange',
+      bgColor: 'bg-pixel-accent-orange/20',
+      borderColor: 'border-pixel-accent-orange',
       content: '',
       updatedAt: null
     }
@@ -46,17 +54,17 @@ const BlackboardView = ({ sections = [], onSectionUpdate }) => {
   const displaySections = sections.length > 0 ? sections : defaultSections;
 
   return (
-    <div className="glass-panel rounded-xl border border-white/10 overflow-hidden">
+    <div className="bg-bg-card border-4 border-border overflow-hidden">
       {/* 头部 */}
-      <div className="glass-panel border-b border-white/5 px-6 py-4 flex items-center justify-between">
+      <div className="bg-bg-card border-b-4 border-border px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <i className="ri-layout-grid-line text-purple-400 text-xl" />
+          <i className="ri-layout-grid-line text-pixel-accent-purple text-xl" />
           <div>
-            <h3 className="text-base font-semibold text-white">协作黑板</h3>
-            <p className="text-xs text-white/40">团队知识共享空间</p>
+            <h3 className="text-base font-pixel-title text-white">协作黑板</h3>
+            <p className="text-xs text-pixel-gray font-pixel-body">团队知识共享空间</p>
           </div>
         </div>
-        <button className="px-4 py-2 btn-primary text-white rounded-xl text-sm font-medium flex items-center gap-2">
+        <button className="px-4 py-2 border-4 border-pixel-primary bg-pixel-primary text-white text-sm font-pixel-body hover:bg-pixel-accent-purple hover:border-pixel-accent-purple flex items-center gap-2 transition-colors">
           <i className="ri-add-line" />
           添加内容
         </button>
@@ -67,30 +75,30 @@ const BlackboardView = ({ sections = [], onSectionUpdate }) => {
         {displaySections.map((section) => (
           <div
             key={section.id}
-            className="rounded-xl border border-white/10 bg-white/5 overflow-hidden hover:border-purple-500/30 transition-all"
+            className="border-4 border-border bg-bg-secondary overflow-hidden hover:border-pixel-accent-purple transition-all"
           >
             {/* 分区头部 */}
             <div
-              className="px-4 py-3 border-b border-white/5 cursor-pointer hover:bg-white/5"
+              className="px-4 py-3 border-b-4 border-border cursor-pointer hover:bg-bg-card"
               onClick={() => setActiveSection(activeSection === section.id ? null : section.id)}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${section.color} flex items-center justify-center`}>
+                  <div className={`w-8 h-8 border-4 ${section.color} flex items-center justify-center`}>
                     <i className={`${section.icon} text-white text-sm`} />
                   </div>
-                  <span className="text-sm font-medium text-white">{section.name}</span>
+                  <span className="text-sm font-pixel-title text-white">{section.name}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   {section.updatedAt && (
-                    <span className="text-xs text-white/40">
+                    <span className="text-xs text-pixel-gray font-pixel-body">
                       {new Date(section.updatedAt).toLocaleDateString()}
                     </span>
                   )}
                   <i
                     className={`ri-arrow-down-s-line transition-transform ${
                       activeSection === section.id ? 'rotate-180' : ''
-                    } text-white/40`}
+                    } text-pixel-gray`}
                   />
                 </div>
               </div>
@@ -100,25 +108,25 @@ const BlackboardView = ({ sections = [], onSectionUpdate }) => {
             {activeSection === section.id && (
               <div className="p-4">
                 {section.content ? (
-                  <div className="text-sm text-white/70 whitespace-pre-wrap">{section.content}</div>
+                  <div className="text-sm text-white font-pixel-body whitespace-pre-wrap">{section.content}</div>
                 ) : (
-                  <div className="text-sm text-white/40 italic">暂无内容，点击编辑添加</div>
+                  <div className="text-sm text-pixel-gray font-pixel-body">暂无内容，点击编辑添加</div>
                 )}
 
                 {/* 操作按钮 */}
-                <div className="flex items-center gap-2 mt-4 pt-4 border-t border-white/5">
+                <div className="flex items-center gap-2 mt-4 pt-4 border-t-4 border-border">
                   <button
                     onClick={() => setEditingSection(section.id)}
-                    className="px-3 py-1.5 rounded-lg bg-white/5 text-white/60 hover:text-white hover:bg-white/10 transition-all text-xs flex items-center gap-1"
+                    className="px-3 py-1.5 border-4 border-border bg-bg-card text-pixel-gray hover:text-white hover:border-pixel-primary transition-all text-xs font-pixel-body flex items-center gap-1"
                   >
                     <i className="ri-edit-line" />
                     编辑
                   </button>
-                  <button className="px-3 py-1.5 rounded-lg bg-white/5 text-white/60 hover:text-white hover:bg-white/10 transition-all text-xs flex items-center gap-1">
+                  <button className="px-3 py-1.5 border-4 border-border bg-bg-card text-pixel-gray hover:text-white hover:border-pixel-primary transition-all text-xs font-pixel-body flex items-center gap-1">
                     <i className="ri-history-line" />
                     历史
                   </button>
-                  <button className="px-3 py-1.5 rounded-lg bg-white/5 text-white/60 hover:text-white hover:bg-white/10 transition-all text-xs flex items-center gap-1">
+                  <button className="px-3 py-1.5 border-4 border-border bg-bg-card text-pixel-gray hover:text-white hover:border-pixel-primary transition-all text-xs font-pixel-body flex items-center gap-1">
                     <i className="ri-share-line" />
                     分享
                   </button>

@@ -5,16 +5,16 @@ const Layout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="flex h-screen bg-gradient-bg text-white font-sans overflow-hidden relative">
-      {/* 背景装饰 */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="floating-shape w-96 h-96 bg-purple-500 top-0 left-0 -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="floating-shape w-80 h-80 bg-blue-500 top-1/2 right-0 translate-x-1/3"></div>
-        <div className="floating-shape w-72 h-72 bg-pink-500 bottom-0 left-1/3"></div>
-      </div>
+    <div className="flex h-screen bg-bg-primary text-white font-pixel-body overflow-hidden relative">
+      {/* 像素图案背景 */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none pixel-pattern-bg opacity-30"></div>
 
-      {/* 玻璃态背景层 */}
-      <div className="fixed inset-0 bg-glass backdrop-blur-glass pointer-events-none"></div>
+      {/* 扫描线效果层 */}
+      <div className="fixed inset-0 bg-bg-primary/50 pointer-events-none"
+           style={{
+             background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.1) 2px, rgba(0, 0, 0, 0.1) 4px)'
+           }}>
+      </div>
 
       {/* 内容区域 */}
       <div className="relative z-10 flex h-full w-full">

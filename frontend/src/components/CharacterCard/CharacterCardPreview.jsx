@@ -2,8 +2,7 @@ import React from 'react';
 import BotAvatar from '../BotAvatar';
 
 /**
- * 角色卡预览组件
- * 用于在列表中展示角色卡摘要信息
+ * 角色卡预览组件 - 像素风格
  */
 const CharacterCardPreview = ({ character, onClick, isSelected }) => {
   const {
@@ -17,7 +16,6 @@ const CharacterCardPreview = ({ character, onClick, isSelected }) => {
     status = 'active'
   } = character || {};
 
-  // 获取专长标签样式
   const getTagStyle = (tag) => {
     const tagStyles = {
       coding: 'tag-expertise',
@@ -40,8 +38,8 @@ const CharacterCardPreview = ({ character, onClick, isSelected }) => {
 
   return (
     <div
-      className={`character-card p-5 rounded-2xl cursor-pointer transition-all ${
-        isSelected ? 'border-purple-500/50 bg-purple-500/10' : ''
+      className={`character-card p-5 cursor-pointer transition-all border-4 ${
+        isSelected ? 'border-pixel-accent-purple bg-pixel-accent-purple/10 shadow-pixel-sm' : 'border-border hover:border-pixel-border-light'
       }`}
       onClick={() => onClick && onClick(character)}
     >
@@ -55,12 +53,12 @@ const CharacterCardPreview = ({ character, onClick, isSelected }) => {
         <div className="flex-1 min-w-0">
           {/* 名称和状态 */}
           <div className="flex items-center justify-between mb-1">
-            <h3 className="font-semibold text-white">{name}</h3>
+            <h3 className="font-pixel-body text-base text-white">{name}</h3>
             <span
-              className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+              className={`px-2 py-0.5 text-xs font-pixel-title border-2 ${
                 status === 'active'
-                  ? 'bg-emerald-500/20 text-emerald-400'
-                  : 'bg-white/10 text-white/50'
+                  ? 'bg-pixel-accent-green/20 text-pixel-accent-green border-pixel-accent-green'
+                  : 'bg-bg-secondary text-pixel-gray border-border'
               }`}
             >
               {status === 'active' ? '活跃' : '草稿'}
@@ -68,7 +66,7 @@ const CharacterCardPreview = ({ character, onClick, isSelected }) => {
           </div>
 
           {/* 描述 */}
-          <p className="text-sm text-white/50 line-clamp-2 mb-3">
+          <p className="text-sm text-pixel-gray line-clamp-2 mb-3 font-pixel-body">
             {description || '暂无描述'}
           </p>
 
@@ -78,13 +76,13 @@ const CharacterCardPreview = ({ character, onClick, isSelected }) => {
               {expertise.slice(0, 5).map((tag, idx) => (
                 <span
                   key={idx}
-                  className={`${getTagStyle(tag)} px-2 py-0.5 rounded-lg text-xs font-medium`}
+                  className={`${getTagStyle(tag)} px-2 py-0.5 text-xs font-pixel-body`}
                 >
                   {tag}
                 </span>
               ))}
               {expertise.length > 5 && (
-                <span className="px-2 py-0.5 rounded-lg text-xs text-white/40">
+                <span className="px-2 py-0.5 text-xs text-pixel-gray font-pixel-body">
                   +{expertise.length - 5}
                 </span>
               )}

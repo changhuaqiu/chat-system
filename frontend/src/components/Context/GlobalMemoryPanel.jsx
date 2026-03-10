@@ -1,7 +1,7 @@
 import React from 'react';
 
 /**
- * 全局记忆面板
+ * 全局记忆面板 - 像素风格
  * 展示用户偏好、历史项目摘要等全局信息
  */
 const GlobalMemoryPanel = ({ memories = [], onAddMemory, onDeleteMemory }) => {
@@ -32,19 +32,19 @@ const GlobalMemoryPanel = ({ memories = [], onAddMemory, onDeleteMemory }) => {
   };
 
   return (
-    <div className="glass-panel rounded-xl border border-white/10 overflow-hidden">
+    <div className="bg-bg-card border-4 border-border overflow-hidden">
       {/* 头部 */}
-      <div className="glass-panel border-b border-white/5 px-6 py-4 flex items-center justify-between">
+      <div className="bg-bg-card border-b-4 border-border px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <i className="ri-global-line text-pink-400 text-xl" />
+          <i className="ri-global-line text-pixel-accent-pink text-xl" />
           <div>
-            <h3 className="text-base font-semibold text-white">全局记忆</h3>
-            <p className="text-xs text-white/40">跨房间的持久化信息</p>
+            <h3 className="text-base font-pixel-title text-white">全局记忆</h3>
+            <p className="text-xs text-pixel-gray font-pixel-body">跨房间的持久化信息</p>
           </div>
         </div>
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="p-2 rounded-xl btn-secondary text-white/60 hover:text-white transition-all"
+          className="p-2 border-4 border-border text-pixel-gray hover:text-white hover:border-pixel-primary transition-colors"
         >
           <i className="ri-add-line text-xl" />
         </button>
@@ -52,18 +52,18 @@ const GlobalMemoryPanel = ({ memories = [], onAddMemory, onDeleteMemory }) => {
 
       {/* 添加表单 */}
       {showAddForm && (
-        <form onSubmit={handleSubmit} className="p-4 border-b border-white/5">
+        <form onSubmit={handleSubmit} className="p-4 border-b-4 border-border">
           <div className="flex items-center gap-3">
             <input
               type="text"
               value={newMemory}
               onChange={(e) => setNewMemory(e.target.value)}
               placeholder="输入新的全局记忆..."
-              className="flex-1 px-4 py-2 input-field rounded-xl text-white placeholder-white/30 focus:outline-none"
+              className="flex-1 px-4 py-2 border-4 border-border bg-bg-secondary text-white font-pixel-body placeholder-pixel-gray focus:border-pixel-primary outline-none"
             />
             <button
               type="submit"
-              className="px-4 py-2 btn-primary text-white rounded-xl font-medium"
+              className="px-4 py-2 border-4 border-pixel-primary bg-pixel-primary text-white font-pixel-body hover:bg-pixel-accent-purple hover:border-pixel-accent-purple transition-colors"
             >
               添加
             </button>
@@ -76,27 +76,27 @@ const GlobalMemoryPanel = ({ memories = [], onAddMemory, onDeleteMemory }) => {
         {displayMemories.map((memory) => (
           <div
             key={memory.id}
-            className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+            className="p-3 border-4 border-border bg-bg-secondary hover:border-pixel-border-light transition-colors"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <span
-                    className={`px-2 py-0.5 rounded text-xs font-medium ${
+                    className={`px-2 py-0.5 border-2 text-xs font-pixel-body ${
                       memory.type === 'preference'
-                        ? 'bg-pink-500/20 text-pink-300'
-                        : 'bg-blue-500/20 text-blue-300'
+                        ? 'border-pixel-accent-pink bg-pixel-accent-pink/20 text-pixel-accent-pink'
+                        : 'border-pixel-accent-cyan bg-pixel-accent-cyan/20 text-pixel-accent-cyan'
                     }`}
                   >
                     {memory.type === 'preference' ? '偏好' : '项目'}
                   </span>
-                  <span className="text-xs text-white/40">{memory.createdAt}</span>
+                  <span className="text-xs text-pixel-gray font-pixel-body">{memory.createdAt}</span>
                 </div>
-                <p className="text-sm text-white/70">{memory.content}</p>
+                <p className="text-sm text-white font-pixel-body">{memory.content}</p>
               </div>
               <button
                 onClick={() => onDeleteMemory?.(memory.id)}
-                className="p-1 text-white/30 hover:text-white/60 transition-all"
+                className="p-1 text-pixel-gray hover:text-pixel-accent-pink transition-colors"
               >
                 <i className="ri-close-line" />
               </button>
@@ -106,8 +106,8 @@ const GlobalMemoryPanel = ({ memories = [], onAddMemory, onDeleteMemory }) => {
 
         {displayMemories.length === 0 && (
           <div className="text-center py-8">
-            <i className="ri-inbox-line text-4xl text-white/20 mb-2" />
-            <p className="text-white/40 text-sm">暂无全局记忆</p>
+            <i className="ri-inbox-line text-4xl text-pixel-gray mb-2" />
+            <p className="text-pixel-gray text-sm font-pixel-body">暂无全局记忆</p>
           </div>
         )}
       </div>

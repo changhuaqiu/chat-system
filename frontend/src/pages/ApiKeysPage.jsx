@@ -37,7 +37,7 @@ const ApiKeysPage = () => {
       setApiKeys(keys);
       setStats({
         totalKeys: keys.length,
-        monthlyCalls: 2300000, // Mock
+        monthlyCalls: 2300000,
         expiringKeys: keys.filter(k => k.status === 'expiring').length
       });
     } catch (error) {
@@ -108,7 +108,6 @@ const ApiKeysPage = () => {
         newModelQuota.requestLimit,
         newModelQuota.rateLimit
       );
-      // Refresh model quotas
       const modelQuotasResponse = await apiService.getModelQuotas(selectedKey.key);
       setQuotaSettings(prev => ({
         ...prev,
@@ -166,7 +165,6 @@ const ApiKeysPage = () => {
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    // Could add toast notification here
   };
 
   const handleDeleteKey = async (key) => {
@@ -184,102 +182,102 @@ const ApiKeysPage = () => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#f5f5f7] p-8 font-apple">
+    <div className="flex-1 overflow-y-auto bg-bg-primary p-8 font-pixel-body pixel-scrollbar">
       <header className="mb-8 flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-bold text-[#1d1d1f] tracking-tight">API 密钥</h1>
-          <p className="text-[#86868b] mt-1">管理您服务的访问令牌。</p>
+          <h1 className="text-2xl font-pixel-title text-white tracking-tight">API 密钥</h1>
+          <p className="text-pixel-gray mt-1">管理您服务的访问令牌。</p>
         </div>
-        <button 
+        <button
           onClick={() => setShowCreateModal(true)}
-          className="bg-[#007aff] hover:bg-[#0066cc] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center space-x-2"
+          className="btn-primary text-white px-4 py-2 text-sm font-pixel-title flex items-center space-x-2"
         >
           <span className="text-lg">+</span>
           <span>创建新密钥</span>
         </button>
       </header>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - 像素风格 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-[#f5f5f7]">
-          <p className="text-sm font-medium text-[#86868b]">密钥总数</p>
+        <div className="bg-bg-card p-6 border-4 border-border shadow-pixel-md">
+          <p className="text-sm font-pixel-title text-pixel-gray">密钥总数</p>
           <div className="flex justify-between items-end mt-2">
-            <h3 className="text-3xl font-semibold text-[#1d1d1f]">{stats.totalKeys}</h3>
-            <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">本周 +2</span>
+            <h3 className="text-3xl font-pixel-title text-white">{stats.totalKeys}</h3>
+            <span className="text-xs font-pixel-body text-pixel-accent-green bg-pixel-accent-green/20 px-2 py-1 border-2 border-pixel-accent-green">本周 +2</span>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-[#f5f5f7]">
-          <p className="text-sm font-medium text-[#86868b]">月调用量</p>
+        <div className="bg-bg-card p-6 border-4 border-border shadow-pixel-md">
+          <p className="text-sm font-pixel-title text-pixel-gray">月调用量</p>
           <div className="flex justify-between items-end mt-2">
-            <h3 className="text-3xl font-semibold text-[#1d1d1f]">{stats.monthlyCalls.toLocaleString()}</h3>
-            <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">+18.5%</span>
+            <h3 className="text-3xl font-pixel-title text-white">{stats.monthlyCalls.toLocaleString()}</h3>
+            <span className="text-xs font-pixel-body text-pixel-accent-green bg-pixel-accent-green/20 px-2 py-1 border-2 border-pixel-accent-green">+18.5%</span>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-[#f5f5f7]">
-          <p className="text-sm font-medium text-[#86868b]">即将过期</p>
+        <div className="bg-bg-card p-6 border-4 border-border shadow-pixel-md">
+          <p className="text-sm font-pixel-title text-pixel-gray">即将过期</p>
           <div className="flex justify-between items-end mt-2">
-            <h3 className="text-3xl font-semibold text-[#1d1d1f]">{stats.expiringKeys}</h3>
+            <h3 className="text-3xl font-pixel-title text-white">{stats.expiringKeys}</h3>
             {stats.expiringKeys > 0 && (
-              <span className="text-xs font-medium text-orange-600 bg-orange-100 px-2 py-1 rounded-full">需要处理</span>
+              <span className="text-xs font-pixel-body text-pixel-accent-orange bg-pixel-accent-orange/20 px-2 py-1 border-2 border-pixel-accent-orange">需要处理</span>
             )}
           </div>
         </div>
       </div>
 
-      {/* Keys Table */}
-      <div className="bg-white rounded-2xl border border-[#e5e5e5] shadow-sm overflow-hidden">
+      {/* Keys Table - 像素风格 */}
+      <div className="bg-bg-card border-4 border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="border-b border-[#f5f5f7]">
-              <tr className="border-b border-[#f5f5f7]">
-                <th className="px-6 py-4 text-xs font-semibold text-[#86868b] uppercase tracking-wider">名称</th>
-                <th className="px-6 py-4 text-xs font-semibold text-[#86868b] uppercase tracking-wider">令牌 (Token)</th>
-                <th className="px-6 py-4 text-xs font-semibold text-[#86868b] uppercase tracking-wider">配额使用</th>
-                <th className="px-6 py-4 text-xs font-semibold text-[#86868b] uppercase tracking-wider">状态</th>
-                <th className="px-6 py-4 text-xs font-semibold text-[#86868b] uppercase tracking-wider">创建时间</th>
-                <th className="px-6 py-4 text-xs font-semibold text-[#86868b] uppercase tracking-wider text-right">操作</th>
+            <thead className="border-b-4 border-border">
+              <tr>
+                <th className="px-6 py-4 text-xs font-pixel-title text-pixel-gray uppercase tracking-wider">名称</th>
+                <th className="px-6 py-4 text-xs font-pixel-title text-pixel-gray uppercase tracking-wider">令牌 (Token)</th>
+                <th className="px-6 py-4 text-xs font-pixel-title text-pixel-gray uppercase tracking-wider">配额使用</th>
+                <th className="px-6 py-4 text-xs font-pixel-title text-pixel-gray uppercase tracking-wider">状态</th>
+                <th className="px-6 py-4 text-xs font-pixel-title text-pixel-gray uppercase tracking-wider">创建时间</th>
+                <th className="px-6 py-4 text-xs font-pixel-title text-pixel-gray uppercase tracking-wider text-right">操作</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#f5f5f7]">
+            <tbody className="divide-y-4 divide-border">
               {loading ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-12 text-center text-[#86868b]">正在加载密钥...</td>
+                  <td colSpan="5" className="px-6 py-12 text-center text-pixel-gray">正在加载密钥...</td>
                 </tr>
               ) : apiKeys.length === 0 ? (
                 <tr>
                   <td colSpan="5" className="px-6 py-12 text-center">
-                    <p className="text-[#1d1d1f] font-medium">未找到 API 密钥</p>
-                    <p className="text-[#86868b] text-sm mt-1">请创建一个密钥以开始使用。</p>
+                    <p className="text-white font-pixel-title">未找到 API 密钥</p>
+                    <p className="text-pixel-gray text-sm mt-1">请创建一个密钥以开始使用。</p>
                   </td>
                 </tr>
               ) : (
                 apiKeys.map((key, idx) => (
-                  <tr key={idx} className="hover:bg-[#f9f9f9] transition-colors">
+                  <tr key={idx} className="hover:bg-bg-secondary transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600">
+                        <div className="w-8 h-8 bg-pixel-primary/20 border-4 border-pixel-primary/50 flex items-center justify-center text-pixel-primary">
                           🔑
                         </div>
                         <div>
-                          <p className="font-medium text-[#1d1d1f] text-sm">{key.name || '未命名密钥'}</p>
-                          <p className="text-xs text-[#86868b]">{key.environment || 'Production'}</p>
+                          <p className="font-pixel-body text-white text-sm">{key.name || '未命名密钥'}</p>
+                          <p className="text-xs text-pixel-gray">{key.environment || 'Production'}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
-                        <code className="bg-[#f5f5f7] px-2 py-1 rounded text-xs font-mono text-[#1d1d1f] border border-[#e5e5e5]">
+                        <code className="bg-bg-input px-2 py-1 text-xs font-mono text-white border-4 border-border">
                           {visibleKeys[idx] ? key.key : `${key.key.substring(0, 10)}...${key.key.substring(key.key.length - 6)}`}
                         </code>
                         <button
                           onClick={() => toggleVisibility(idx)}
-                          className="text-[#86868b] hover:text-[#007aff] transition-colors"
+                          className="text-pixel-gray hover:text-white transition-colors"
                         >
                           {visibleKeys[idx] ? '👁️‍🗨️' : '👁️'}
                         </button>
                         <button
                           onClick={() => copyToClipboard(key.key)}
-                          className="text-[#86868b] hover:text-[#007aff] transition-colors"
+                          className="text-pixel-gray hover:text-white transition-colors"
                           title="复制"
                         >
                           📋
@@ -288,54 +286,54 @@ const ApiKeysPage = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
-                        <div className="flex-1 bg-[#f5f5f7] rounded-full h-2 w-24">
+                        <div className="flex-1 bg-bg-secondary h-3 w-24 border-2 border-border">
                           <div
-                            className="bg-[#007aff] h-2 rounded-full transition-all"
+                            className="bg-pixel-primary h-full transition-all"
                             style={{ width: key.quota_limit > 0 ? `${Math.min((key.quota_used || 0) / key.quota_limit * 100, 100)}%` : '0%' }}
                           />
                         </div>
-                        <span className="text-xs text-[#86868b]">
+                        <span className="text-xs text-pixel-gray">
                           {key.quota_limit > 0 ? `${key.quota_used || 0}/${key.quota_limit}` : '无限制'}
                         </span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       {key.status === 'active' ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <span className="inline-flex items-center px-2.5 py-1 text-xs font-pixel-title bg-pixel-accent-green/20 text-pixel-accent-green border-2 border-pixel-accent-green">
                           活跃
                         </span>
                       ) : key.status === 'inactive' ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        <span className="inline-flex items-center px-2.5 py-1 text-xs font-pixel-title bg-bg-secondary text-pixel-gray border-2 border-border">
                           未激活
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                        <span className="inline-flex items-center px-2.5 py-1 text-xs font-pixel-title bg-pixel-accent-orange/20 text-pixel-accent-orange border-2 border-pixel-accent-orange">
                           已过期
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-[#86868b]">
+                    <td className="px-6 py-4 text-sm text-pixel-gray">
                       {key.created_at ? new Date(key.created_at).toLocaleDateString() : '2024-01-01'}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end space-x-1">
                         <button
                           onClick={() => handleOpenQuotaModal(key)}
-                          className="text-[#86868b] hover:text-[#007aff] transition-colors p-2 rounded-lg hover:bg-blue-50"
+                          className="text-pixel-gray hover:text-white transition-colors p-2 hover:bg-bg-secondary"
                           title="配额设置"
                         >
                           📊
                         </button>
                         <button
                           onClick={() => handleOpenStatsModal(key)}
-                          className="text-[#86868b] hover:text-[#007aff] transition-colors p-2 rounded-lg hover:bg-blue-50"
+                          className="text-pixel-gray hover:text-white transition-colors p-2 hover:bg-bg-secondary"
                           title="使用统计"
                         >
                           📈
                         </button>
                         <button
                           onClick={() => handleDeleteKey(key)}
-                          className="text-[#86868b] hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-50"
+                          className="text-pixel-gray hover:text-pixel-accent-pink transition-colors p-2 hover:bg-bg-secondary"
                           title="删除"
                         >
                           🗑️
@@ -350,35 +348,35 @@ const ApiKeysPage = () => {
         </div>
       </div>
 
-      {/* Create Modal */}
+      {/* Create Modal - 像素风格 */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl transform transition-all scale-100">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-bg-card w-full max-w-md p-6 shadow-pixel-xl border-4 border-border">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-[#1d1d1f]">创建 API 密钥</h3>
-              <button onClick={() => setShowCreateModal(false)} className="text-[#86868b] hover:text-[#1d1d1f]">
+              <h3 className="text-lg font-pixel-title text-white">创建 API 密钥</h3>
+              <button onClick={() => setShowCreateModal(false)} className="text-pixel-gray hover:text-white">
                 ✕
               </button>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">密钥名称</label>
+                <label className="block text-sm font-pixel-title text-white mb-1.5">密钥名称</label>
                 <input
                   type="text"
                   value={newKeyName}
                   onChange={(e) => setNewKeyName(e.target.value)}
                   placeholder="例如：开发服务器"
-                  className="w-full px-4 py-2 bg-white border border-[#d2d2d7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/20 focus:border-[#007aff] transition-all"
+                  className="w-full px-4 py-2 bg-bg-input border-4 border-border text-sm text-white placeholder-pixel-gray focus:outline-none focus:border-pixel-border-highlight transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">环境</label>
+                <label className="block text-sm font-pixel-title text-white mb-1.5">环境</label>
                 <select
                   value={newKeyEnvironment}
                   onChange={(e) => setNewKeyEnvironment(e.target.value)}
-                  className="w-full px-4 py-2 bg-white border border-[#d2d2d7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/20 focus:border-[#007aff] transition-all appearance-none"
+                  className="w-full px-4 py-2 bg-bg-input border-4 border-border text-sm text-white focus:outline-none focus:border-pixel-border-highlight transition-colors appearance-none"
                 >
                   <option value="production">生产环境 (Production)</option>
                   <option value="development">开发环境 (Development)</option>
@@ -390,13 +388,13 @@ const ApiKeysPage = () => {
             <div className="mt-8 flex space-x-3">
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="flex-1 px-4 py-2.5 rounded-lg border border-[#d2d2d7] text-[#1d1d1f] font-medium hover:bg-[#f5f5f7] transition-colors"
+                className="flex-1 px-4 py-2.5 border-4 border-border text-white font-pixel-title hover:bg-bg-secondary transition-colors"
               >
                 取消
               </button>
               <button
                 onClick={handleCreateKey}
-                className="flex-1 px-4 py-2.5 rounded-lg bg-[#007aff] text-white font-medium hover:bg-[#0066cc] transition-colors shadow-sm"
+                className="flex-1 px-4 py-2.5 btn-primary text-white font-pixel-title"
               >
                 创建密钥
               </button>
@@ -405,110 +403,69 @@ const ApiKeysPage = () => {
         </div>
       )}
 
-      {/* Quota Settings Modal */}
+      {/* Quota Settings Modal - 像素风格 */}
       {showQuotaModal && selectedKey && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl w-full max-w-2xl p-6 shadow-2xl transform transition-all scale-100 max-h-[80vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-bg-card w-full max-w-2xl p-6 shadow-pixel-xl border-4 border-border max-h-[80vh] overflow-y-auto pixel-scrollbar">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h3 className="text-xl font-bold text-[#1d1d1f]">配额设置</h3>
-                <p className="text-sm text-[#86868b] mt-1">{selectedKey.name || selectedKey.key}</p>
+                <h3 className="text-lg font-pixel-title text-white">配额设置</h3>
+                <p className="text-sm text-pixel-gray mt-1">{selectedKey.name || selectedKey.key}</p>
               </div>
-              <button onClick={() => setShowQuotaModal(false)} className="text-[#86868b] hover:text-[#1d1d1f]">
+              <button onClick={() => setShowQuotaModal(false)} className="text-pixel-gray hover:text-white">
                 ✕
               </button>
             </div>
 
             <div className="space-y-6">
-              {/* Total Quota Settings */}
-              <div className="bg-[#f5f5f7] rounded-xl p-4">
-                <h4 className="text-sm font-semibold text-[#1d1d1f] mb-4">总配额设置</h4>
+              <div className="bg-bg-secondary p-4 border-4 border-border">
+                <h4 className="text-sm font-pixel-title text-white mb-4">总配额设置</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-[#86868b] mb-1.5">请求配额上限</label>
+                    <label className="block text-xs font-pixel-title text-pixel-gray mb-1.5">请求配额上限</label>
                     <input
                       type="number"
                       value={quotaSettings.quotaLimit}
                       onChange={(e) => setQuotaSettings(prev => ({ ...prev, quotaLimit: parseInt(e.target.value) || -1 }))}
                       placeholder="-1 表示无限制"
-                      className="w-full px-3 py-2 bg-white border border-[#d2d2d7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/20 focus:border-[#007aff] transition-all"
+                      className="w-full px-3 py-2 bg-bg-input border-4 border-border text-sm text-white focus:outline-none focus:border-pixel-border-highlight transition-colors"
                     />
-                    <p className="text-xs text-[#86868b] mt-1">已使用：{quotaSettings.quotaUsed || 0}</p>
+                    <p className="text-xs text-pixel-gray mt-1">已使用：{quotaSettings.quotaUsed || 0}</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-[#86868b] mb-1.5">限流 (RPM)</label>
+                    <label className="block text-xs font-pixel-title text-pixel-gray mb-1.5">限流 (RPM)</label>
                     <input
                       type="number"
                       value={quotaSettings.rateLimit}
                       onChange={(e) => setQuotaSettings(prev => ({ ...prev, rateLimit: parseInt(e.target.value) || 60 }))}
-                      className="w-full px-3 py-2 bg-white border border-[#d2d2d7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/20 focus:border-[#007aff] transition-all"
+                      className="w-full px-3 py-2 bg-bg-input border-4 border-border text-sm text-white focus:outline-none focus:border-pixel-border-highlight transition-colors"
                     />
-                    <p className="text-xs text-[#86868b] mt-1">超额后降至此限流</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleResetQuota()}
-                  className="mt-3 text-xs text-[#007aff] hover:text-[#0066cc]"
-                >
-                  🔄 重置总配额计数
-                </button>
               </div>
 
-              {/* Model Quota Settings */}
               <div>
-                <h4 className="text-sm font-semibold text-[#1d1d1f] mb-4">分模型配额</h4>
-
-                {/* Add new model quota */}
-                <div className="bg-[#f5f5f7] rounded-xl p-4 mb-4">
-                  <p className="text-xs font-medium text-[#86868b] mb-2">添加模型配额</p>
-                  <div className="grid grid-cols-3 gap-3">
-                    <input
-                      type="text"
-                      value={newModelQuota.model}
-                      onChange={(e) => setNewModelQuota(prev => ({ ...prev, model: e.target.value }))}
-                      placeholder="模型名称 (如 qwen-max)"
-                      className="w-full px-3 py-2 bg-white border border-[#d2d2d7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/20 focus:border-[#007aff] transition-all"
-                    />
-                    <input
-                      type="number"
-                      value={newModelQuota.requestLimit}
-                      onChange={(e) => setNewModelQuota(prev => ({ ...prev, requestLimit: parseInt(e.target.value) || -1 }))}
-                      placeholder="配额上限"
-                      className="w-full px-3 py-2 bg-white border border-[#d2d2d7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/20 focus:border-[#007aff] transition-all"
-                    />
-                    <button
-                      onClick={handleAddModelQuota}
-                      className="px-4 py-2 bg-[#007aff] text-white rounded-lg text-sm font-medium hover:bg-[#0066cc] transition-colors"
-                    >
-                      添加
-                    </button>
-                  </div>
-                </div>
-
-                {/* Model quotas list */}
+                <h4 className="text-sm font-pixel-title text-white mb-4">分模型配额</h4>
                 <div className="space-y-2">
                   {quotaSettings.modelQuotas && quotaSettings.modelQuotas.length > 0 ? (
                     quotaSettings.modelQuotas.map((mq, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 bg-[#f9f9f9] rounded-lg">
+                      <div key={idx} className="flex items-center justify-between p-3 bg-bg-secondary border-4 border-border">
                         <div>
-                          <p className="text-sm font-medium text-[#1d1d1f]">{mq.model_name}</p>
-                          <p className="text-xs text-[#86868b]">
+                          <p className="text-sm font-pixel-body text-white">{mq.model_name}</p>
+                          <p className="text-xs text-pixel-gray">
                             已使用：{mq.request_used || 0} / {mq.request_limit > 0 ? mq.request_limit : '无限制'}
-                            {mq.request_limit > 0 && (
-                              <span className="ml-2"> (限流：{mq.rate_limit} RPM)</span>
-                            )}
                           </p>
                         </div>
                         <button
                           onClick={() => handleResetQuota(mq.model_name)}
-                          className="text-xs text-[#007aff] hover:text-[#0066cc]"
+                          className="text-xs text-pixel-accent-cyan hover:text-pixel-accent-pink font-pixel-body"
                         >
                           🔄 重置
                         </button>
                       </div>
                     ))
                   ) : (
-                    <p className="text-sm text-[#86868b] text-center py-4">暂无分模型配额设置</p>
+                    <p className="text-sm text-pixel-gray text-center py-4">暂无分模型配额设置</p>
                   )}
                 </div>
               </div>
@@ -517,13 +474,13 @@ const ApiKeysPage = () => {
             <div className="mt-6 flex space-x-3">
               <button
                 onClick={() => setShowQuotaModal(false)}
-                className="flex-1 px-4 py-2.5 rounded-lg border border-[#d2d2d7] text-[#1d1d1f] font-medium hover:bg-[#f5f5f7] transition-colors"
+                className="flex-1 px-4 py-2.5 border-4 border-border text-white font-pixel-title hover:bg-bg-secondary transition-colors"
               >
                 取消
               </button>
               <button
                 onClick={handleSaveQuotaSettings}
-                className="flex-1 px-4 py-2.5 rounded-lg bg-[#007aff] text-white font-medium hover:bg-[#0066cc] transition-colors shadow-sm"
+                className="flex-1 px-4 py-2.5 btn-primary text-white font-pixel-title"
               >
                 保存设置
               </button>
@@ -532,30 +489,29 @@ const ApiKeysPage = () => {
         </div>
       )}
 
-      {/* Usage Stats Modal */}
+      {/* Usage Stats Modal - 像素风格 */}
       {showStatsModal && selectedKey && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl w-full max-w-2xl p-6 shadow-2xl transform transition-all scale-100 max-h-[80vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-bg-card w-full max-w-2xl p-6 shadow-pixel-xl border-4 border-border max-h-[80vh] overflow-y-auto pixel-scrollbar">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h3 className="text-xl font-bold text-[#1d1d1f]">使用统计</h3>
-                <p className="text-sm text-[#86868b] mt-1">{selectedKey.name || selectedKey.key}</p>
+                <h3 className="text-lg font-pixel-title text-white">使用统计</h3>
+                <p className="text-sm text-pixel-gray mt-1">{selectedKey.name || selectedKey.key}</p>
               </div>
-              <button onClick={() => setShowStatsModal(false)} className="text-[#86868b] hover:text-[#1d1d1f]">
+              <button onClick={() => setShowStatsModal(false)} className="text-pixel-gray hover:text-white">
                 ✕
               </button>
             </div>
 
-            {/* Days filter */}
             <div className="flex space-x-2 mb-6">
               {[7, 14, 30].map(days => (
                 <button
                   key={days}
                   onClick={() => handleStatsDaysChange(days)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 text-sm font-pixel-title transition-colors ${
                     statsDays === days
-                      ? 'bg-[#007aff] text-white'
-                      : 'bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#e5e5e5]'
+                      ? 'bg-pixel-primary text-white border-4 border-pixel-primary-dark'
+                      : 'bg-bg-secondary text-pixel-gray border-4 border-border hover:text-white'
                   }`}
                 >
                   最近 {days} 天
@@ -563,65 +519,42 @@ const ApiKeysPage = () => {
               ))}
             </div>
 
-            {/* Usage Stats Table */}
             <div className="mb-6">
-              <h4 className="text-sm font-semibold text-[#1d1d1f] mb-3">使用趋势</h4>
+              <h4 className="text-sm font-pixel-title text-white mb-3">使用趋势</h4>
               {usageStats.stats && usageStats.stats.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm">
-                    <thead className="bg-[#f5f5f7]">
+                    <thead className="bg-bg-secondary border-b-4 border-border">
                       <tr>
-                        <th className="px-4 py-2 text-[#86868b]">日期</th>
-                        <th className="px-4 py-2 text-[#86868b]">总请求</th>
-                        <th className="px-4 py-2 text-green-600">成功</th>
-                        <th className="px-4 py-2 text-red-600">失败</th>
-                        <th className="px-4 py-2 text-orange-600">限流</th>
+                        <th className="px-4 py-2 text-pixel-gray font-pixel-title">日期</th>
+                        <th className="px-4 py-2 text-pixel-gray font-pixel-title">总请求</th>
+                        <th className="px-4 py-2 text-pixel-accent-green font-pixel-title">成功</th>
+                        <th className="px-4 py-2 text-pixel-accent-pink font-pixel-title">失败</th>
+                        <th className="px-4 py-2 text-pixel-accent-orange font-pixel-title">限流</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#f5f5f7]">
+                    <tbody className="divide-y-4 divide-border">
                       {usageStats.stats.map((stat, idx) => (
                         <tr key={idx}>
-                          <td className="px-4 py-3 text-[#1d1d1f]">{stat.date}</td>
-                          <td className="px-4 py-3 text-[#1d1d1f]">{stat.requests}</td>
-                          <td className="px-4 py-3 text-green-600">{stat.success || 0}</td>
-                          <td className="px-4 py-3 text-red-600">{stat.errors || 0}</td>
-                          <td className="px-4 py-3 text-orange-600">{stat.rate_limited || 0}</td>
+                          <td className="px-4 py-3 text-white font-pixel-body">{stat.date}</td>
+                          <td className="px-4 py-3 text-white font-pixel-body">{stat.requests}</td>
+                          <td className="px-4 py-3 text-pixel-accent-green font-pixel-body">{stat.success || 0}</td>
+                          <td className="px-4 py-3 text-pixel-accent-pink font-pixel-body">{stat.errors || 0}</td>
+                          <td className="px-4 py-3 text-pixel-accent-orange font-pixel-body">{stat.rate_limited || 0}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               ) : (
-                <p className="text-sm text-[#86868b] text-center py-8">暂无使用数据</p>
-              )}
-            </div>
-
-            {/* Model Usage Ranking */}
-            <div>
-              <h4 className="text-sm font-semibold text-[#1d1d1f] mb-3">模型使用排行</h4>
-              {usageStats.ranking && usageStats.ranking.length > 0 ? (
-                <div className="space-y-2">
-                  {usageStats.ranking.map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-[#f9f9f9] rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <span className="w-6 h-6 rounded-full bg-[#007aff] text-white text-xs flex items-center justify-center font-medium">
-                          {idx + 1}
-                        </span>
-                        <span className="text-sm font-medium text-[#1d1d1f]">{item.model_name}</span>
-                      </div>
-                      <span className="text-sm text-[#86868b]">{item.requests} 次请求</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-[#86868b] text-center py-8">暂无模型使用数据</p>
+                <p className="text-sm text-pixel-gray text-center py-8">暂无使用数据</p>
               )}
             </div>
 
             <div className="mt-6">
               <button
                 onClick={() => setShowStatsModal(false)}
-                className="w-full px-4 py-2.5 rounded-lg bg-[#f5f5f7] text-[#1d1d1f] font-medium hover:bg-[#e5e5e5] transition-colors"
+                className="w-full px-4 py-2.5 bg-bg-secondary text-white font-pixel-title border-4 border-border hover:bg-bg-input transition-colors"
               >
                 关闭
               </button>

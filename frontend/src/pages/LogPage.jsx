@@ -25,10 +25,10 @@ const LogPage = () => {
 
   const getLevelColor = useMemo(() => (level) => {
     switch (level?.toLowerCase()) {
-      case 'error': return 'bg-red-100 text-red-700 border-red-200';
-      case 'warn': return 'bg-orange-100 text-orange-700 border-orange-200';
-      case 'info': return 'bg-blue-100 text-blue-700 border-blue-200';
-      default: return 'bg-gray-100 text-gray-700 border-gray-200';
+      case 'error': return 'bg-pixel-accent-pink/20 text-pixel-accent-pink border-pixel-accent-pink';
+      case 'warn': return 'bg-pixel-accent-orange/20 text-pixel-accent-orange border-pixel-accent-orange';
+      case 'info': return 'bg-pixel-accent-cyan/20 text-pixel-accent-cyan border-pixel-accent-cyan';
+      default: return 'bg-bg-card text-pixel-gray border-border';
     }
   }, []);
 
@@ -58,35 +58,35 @@ const LogPage = () => {
   }, []);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#f5f5f7] p-8 font-apple">
+    <div className="flex-1 overflow-y-auto bg-bg-primary p-8 font-pixel-body pixel-scrollbar">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold text-[#1d1d1f] tracking-tight">系统日志</h1>
-        <p className="text-[#86868b] mt-1">监控系统事件和错误。</p>
+        <h1 className="text-2xl font-pixel-title text-white tracking-tight">系统日志</h1>
+        <p className="text-pixel-gray mt-1">监控系统事件和错误。</p>
       </header>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - 像素风格 */}
       <div className="grid grid-cols-4 gap-4 mb-8">
-        <div className="bg-white p-4 rounded-xl border border-[#e5e5e5] shadow-sm">
-          <p className="text-xs font-medium text-[#86868b] uppercase">总事件数</p>
-          <p className="text-2xl font-semibold text-[#1d1d1f] mt-1">{stats.total}</p>
+        <div className="bg-bg-card p-4 border-4 border-border shadow-pixel-sm">
+          <p className="text-xs font-pixel-title text-pixel-gray uppercase">总事件数</p>
+          <p className="text-2xl font-pixel-title text-white mt-1">{stats.total}</p>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-[#e5e5e5] shadow-sm">
-          <p className="text-xs font-medium text-red-500 uppercase">错误</p>
-          <p className="text-2xl font-semibold text-[#1d1d1f] mt-1">{stats.error}</p>
+        <div className="bg-bg-card p-4 border-4 border-border shadow-pixel-sm">
+          <p className="text-xs font-pixel-title text-pixel-accent-pink uppercase">错误</p>
+          <p className="text-2xl font-pixel-title text-white mt-1">{stats.error}</p>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-[#e5e5e5] shadow-sm">
-          <p className="text-xs font-medium text-orange-500 uppercase">警告</p>
-          <p className="text-2xl font-semibold text-[#1d1d1f] mt-1">{stats.warn}</p>
+        <div className="bg-bg-card p-4 border-4 border-border shadow-pixel-sm">
+          <p className="text-xs font-pixel-title text-pixel-accent-orange uppercase">警告</p>
+          <p className="text-2xl font-pixel-title text-white mt-1">{stats.warn}</p>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-[#e5e5e5] shadow-sm">
-          <p className="text-xs font-medium text-blue-500 uppercase">信息</p>
-          <p className="text-2xl font-semibold text-[#1d1d1f] mt-1">{stats.info}</p>
+        <div className="bg-bg-card p-4 border-4 border-border shadow-pixel-sm">
+          <p className="text-xs font-pixel-title text-pixel-accent-cyan uppercase">信息</p>
+          <p className="text-2xl font-pixel-title text-white mt-1">{stats.info}</p>
         </div>
       </div>
 
       {/* Toolbar */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <div className="flex space-x-2 bg-white p-1 rounded-lg border border-[#d2d2d7] shadow-sm">
+        <div className="flex space-x-2 bg-bg-card p-1 border-4 border-border">
           {[
             { id: 'all', label: '全部' },
             { id: 'error', label: '错误' },
@@ -96,10 +96,10 @@ const LogPage = () => {
             <button
               key={type.id}
               onClick={() => handleFilterChange(type.id)}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+              className={`px-4 py-2 text-sm font-pixel-title transition-colors ${
                 filter === type.id
-                  ? 'bg-[#007aff] text-white shadow-sm'
-                  : 'text-[#1d1d1f] hover:bg-[#f5f5f7]'
+                  ? 'bg-pixel-primary text-white border-4 border-pixel-primary-dark'
+                  : 'text-pixel-gray hover:text-white'
               }`}
             >
               {type.label}
@@ -113,40 +113,40 @@ const LogPage = () => {
             placeholder="搜索日志..."
             value={search}
             onChange={handleSearchChange}
-            className="w-full pl-9 pr-4 py-2 bg-white border border-[#d2d2d7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/20 focus:border-[#007aff] transition-all"
+            className="w-full pl-9 pr-4 py-2 bg-bg-input border-4 border-border text-sm text-white placeholder-pixel-gray focus:outline-none focus:border-pixel-border-highlight transition-colors font-pixel-body"
           />
-          <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+          <span className="absolute left-3 top-2.5 text-pixel-gray">🔍</span>
         </div>
       </div>
 
-      {/* Logs List */}
-      <div className="bg-white rounded-2xl border border-[#e5e5e5] shadow-sm overflow-hidden">
+      {/* Logs List - 像素风格 */}
+      <div className="bg-bg-card border-4 border-border overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-[#86868b]">正在加载日志...</div>
+          <div className="p-12 text-center text-pixel-gray font-pixel-body">正在加载日志...</div>
         ) : filteredLogs.length === 0 ? (
           <div className="p-12 text-center">
-            <p className="text-[#1d1d1f] font-medium">未找到日志</p>
-            <p className="text-[#86868b] text-sm mt-1">尝试调整筛选条件。</p>
+            <p className="text-white font-pixel-title">未找到日志</p>
+            <p className="text-pixel-gray text-sm mt-1 font-pixel-body">尝试调整筛选条件。</p>
           </div>
         ) : (
-          <div className="divide-y divide-[#f5f5f7]">
+          <div className="divide-y-4 divide-border">
             {filteredLogs.map((log, index) => (
-              <div key={log.id || index} className="p-4 hover:bg-[#f9f9f9] transition-colors flex items-start space-x-4">
-                <span className={`flex-shrink-0 px-2.5 py-0.5 rounded text-[11px] font-bold uppercase tracking-wide border ${getLevelColor(log.level)}`}>
+              <div key={log.id || index} className="p-4 hover:bg-bg-secondary transition-colors flex items-start space-x-4">
+                <span className={`flex-shrink-0 px-2.5 py-1 text-xs font-pixel-title uppercase tracking-wide border-4 ${getLevelColor(log.level)}`}>
                   {log.level}
                 </span>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-baseline mb-1">
-                    <p className="text-sm font-medium text-[#1d1d1f] font-mono truncate pr-4">
+                    <p className="text-sm font-pixel-body text-white truncate pr-4">
                       {log.agent_id ? `[${log.agent_id}] ` : ''}{log.message}
                     </p>
-                    <span className="text-xs text-[#86868b] whitespace-nowrap font-mono">
+                    <span className="text-xs text-pixel-gray whitespace-nowrap font-mono">
                       {new Date(log.timestamp).toLocaleString('zh-CN')}
                     </span>
                   </div>
                   {log.details && (
-                    <pre className="mt-2 p-3 bg-[#f5f5f7] rounded-lg text-xs font-mono text-[#424245] overflow-x-auto border border-[#e5e5e5]">
+                    <pre className="mt-2 p-3 bg-bg-input text-xs font-mono text-pixel-gray overflow-x-auto border-4 border-border">
                       {typeof log.details === 'string' ? log.details : JSON.stringify(log.details, null, 2)}
                     </pre>
                   )}

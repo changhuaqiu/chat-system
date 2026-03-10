@@ -13,7 +13,7 @@ import { PROVIDER_CONFIG } from './constants';
 const RobotManagePage = () => {
   const navigate = useNavigate();
   const { formData, setFormData } = useBotForm('openai');
-  
+
   const [robots, setRobots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -21,7 +21,6 @@ const RobotManagePage = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [testingConnection, setTestingConnection] = useState(false);
 
-  // One-API Status
   const [oneApiStatus, setOneApiStatus] = useState({
     configured: false,
     healthy: false,
@@ -29,7 +28,6 @@ const RobotManagePage = () => {
   });
   const [checkingOneApi, setCheckingOneApi] = useState(false);
 
-  // One-API Channel Selection
   const [oneApiChannels, setOneApiChannels] = useState([]);
   const [useOneApiChannel, setUseOneApiChannel] = useState(false);
   const [selectedChannel, setSelectedChannel] = useState(null);
@@ -50,7 +48,6 @@ const RobotManagePage = () => {
     fetchData();
   }, []);
 
-  // Load One-API channels when modal opens and useOneApiChannel is true
   useEffect(() => {
     if ((showCreateModal || showEditModal) && useOneApiChannel && oneApiStatus.configured) {
       loadOneApiChannels();
@@ -332,22 +329,19 @@ const RobotManagePage = () => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 relative">
-      {/* 背景装饰 */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="floating-shape w-96 h-96 bg-purple-500 top-0 left-0 -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="floating-shape w-80 h-80 bg-blue-500 top-1/2 right-0 translate-x-1/3"></div>
-      </div>
+    <div className="flex-1 overflow-y-auto p-8 relative pixel-scrollbar">
+      {/* 像素图案背景 */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none pixel-pattern-bg opacity-20"></div>
 
       <div className="relative z-10">
         <header className="mb-8 flex justify-between items-end">
           <div>
-            <h1 className="text-3xl font-bold text-white tracking-tight">机器人管理</h1>
-            <p className="text-white/40 mt-1">配置和监控您的 AI 工作机器人。</p>
+            <h1 className="text-2xl font-pixel-title text-white tracking-tight">机器人管理</h1>
+            <p className="text-pixel-gray mt-1 font-pixel-body">配置和监控您的 AI 工作机器人。</p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="btn-primary text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-lg flex items-center space-x-2"
+            className="btn-primary text-white px-4 py-2 text-sm font-pixel-title flex items-center space-x-2"
           >
             <span className="text-lg">+</span>
             <span>部署新机器人</span>
@@ -358,33 +352,33 @@ const RobotManagePage = () => {
       <OneApiStatusBar oneApiStatus={oneApiStatus} />
       <RobotFilterBar filter={filter} setFilter={setFilter} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
-      {/* Robots Grid */}
+      {/* Robots Grid - 像素风格 */}
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007aff]"></div>
+          <div className="animate-spin w-8 h-8 border-4 border-pixel-primary border-t-transparent"></div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredRobots.map(robot => (
-            <RobotCard 
-              key={robot.id} 
-              robot={robot} 
+            <RobotCard
+              key={robot.id}
+              robot={robot}
               onEdit={openEditModal}
               onNavigate={handleNavigate}
               onDelete={openDeleteConfirm}
             />
           ))}
           {filteredRobots.length === 0 && (
-            <div className="col-span-full flex flex-col items-center justify-center p-16 glass-panel rounded-2xl border border-dashed border-white/20">
+            <div className="col-span-full flex flex-col items-center justify-center p-16 bg-bg-card border-4 border-dashed border-border">
               <div className="text-4xl mb-4">🤖</div>
-              <h3 className="text-lg font-medium text-white">未找到机器人</h3>
-              <p className="text-white/40 mt-1 mb-6">
+              <h3 className="text-lg font-pixel-title text-white">未找到机器人</h3>
+              <p className="text-pixel-gray mt-1 mb-6 font-pixel-body">
                 {searchQuery || filter !== 'all' ? '尝试调整筛选条件' : '部署您的第一个 AI 工作机器人以开始处理任务'}
               </p>
               {!searchQuery && filter === 'all' && (
                 <button
                   onClick={() => setShowCreateModal(true)}
-                  className="bg-[#007aff] hover:bg-[#0066cc] text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-lg"
+                  className="btn-primary text-white px-6 py-2.5 text-sm font-pixel-title"
                 >
                   部署机器人
                 </button>
@@ -394,8 +388,8 @@ const RobotManagePage = () => {
         </div>
       )}
 
-      <DeleteConfirmModal 
-        showDeleteConfirm={showDeleteConfirm} 
+      <DeleteConfirmModal
+        showDeleteConfirm={showDeleteConfirm}
         handleDeleteBot={handleDeleteBot}
         setShowDeleteConfirm={setShowDeleteConfirm}
       />

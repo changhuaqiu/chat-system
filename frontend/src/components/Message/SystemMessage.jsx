@@ -1,9 +1,12 @@
 import React from 'react';
 
+/**
+ * 系统消息组件 - 像素风格
+ */
 const SystemMessage = ({ content }) => {
   return (
     <div className="flex justify-center my-4">
-      <div className="bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs px-3 py-1 rounded-full border border-gray-200 dark:border-gray-700">
+      <div className="bg-bg-card text-pixel-gray text-xs px-4 py-2 border-4 border-border font-pixel-body">
         {content}
       </div>
     </div>
