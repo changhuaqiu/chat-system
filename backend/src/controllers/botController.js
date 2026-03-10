@@ -11,7 +11,7 @@ export class BotController {
   // Returns: { success: true, action: 'created'|'updated', id }
   async registerBot(data) {
     let { id, name, avatar, provider_type, config } = data;
-    
+
     // Validate required fields
     if (!id || !name || !provider_type) {
       throw new Error('Missing required fields (id, name, provider_type)');
@@ -19,7 +19,7 @@ export class BotController {
 
     // One API Integration: Automatically configure One API channel
     const llmProviders = ['openai', 'anthropic', 'alibaba', 'deepseek', 'oneapi'];
-    
+
     // Check if One API is available before attempting setup
     let useOneApi = llmProviders.includes(provider_type);
     if (useOneApi) {
@@ -40,7 +40,7 @@ export class BotController {
         console.log(`[BotController] Setting up One API for bot ${id} (${provider_type})...`);
         const models = config.model ? [config.model] : [];
         const oneApiConfig = await oneApiService.setupBotEnv(id, provider_type, config.apiKey, models, config.baseUrl);
-        
+
         // Override config to point to One API
         config = {
           ...config,
@@ -60,96 +60,74 @@ export class BotController {
 
     const configStr = typeof config === 'string' ? config : JSON.stringify(config);
 
-    return new Promise((resolve, reject) => {
-      this.db.get('SELECT id FROM bots WHERE id = ?', [id], (err, row) => {
-        if (err) return reject(err);
+    const row = this.db.prepare('SELECT id FROM bots WHERE id = ?').get(id);
 
-        if (row) {
-          // Update
-          this.db.run(
-            `UPDATE bots SET name = ?, avatar = ?, provider_type = ?, config = ?, status = 'online' WHERE id = ?`,
-            [name, avatar, provider_type, configStr, id],
-            (err) => {
-              if (err) reject(err);
-              else resolve({ success: true, action: 'updated', id });
-            }
-          );
-        } else {
-          // Insert
-          this.db.run(
-            `INSERT INTO bots (id, name, avatar, provider_type, config, status) VALUES (?, ?, ?, ?, ?, 'online')`,
-            [id, name, avatar, provider_type, configStr],
-            (err) => {
-              if (err) reject(err);
-              else resolve({ success: true, action: 'created', id });
-            }
-          );
-        }
-      });
-    });
+    if (row) {
+      // Update
+      this.db.prepare(
+        `UPDATE bots SET name = ?, avatar = ?, provider_type = ?, config = ?, status = 'online' WHERE id = ?`
+      ).run(name, avatar, provider_type, configStr, id);
+      return { success: true, action: 'updated', id };
+    } else {
+      // Insert
+      this.db.prepare(
+        `INSERT INTO bots (id, name, avatar, provider_type, config, status) VALUES (?, ?, ?, ?, ?, 'online')`
+      ).run(id, name, avatar, provider_type, configStr);
+      return { success: true, action: 'created', id };
+    }
   }
 
   // Get all bots
   // Returns: Array of bots
   async getAllBots() {
-    return new Promise((resolve, reject) => {
-      this.db.all(`
-        SELECT b.*, s.total_requests, s.total_tokens, s.last_latency_ms, s.last_active as stats_last_active
-        FROM bots b
-        LEFT JOIN bot_stats s ON b.id = s.bot_id
-        ORDER BY b.rowid DESC
-      `, (err, rows) => {
-        if (err) reject(err);
-        else {
-          // Parse config string back to object
-          const bots = rows.map(bot => {
-            const config = bot.config ? JSON.parse(bot.config) : {};
-            // Generate a consistent color based on bot ID if not set
-            let color = bot.color;
-            if (!color) {
-              const colors = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500', 'bg-teal-500', 'bg-pink-500', 'bg-indigo-500'];
-              const index = bot.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length;
-              color = colors[index];
-            }
-            return {
-              id: bot.id,
-              name: bot.name,
-              avatar: bot.avatar,
-              color,
-              status: bot.status,
-              lastActive: bot.stats_last_active || bot.last_active,
-              model: config.originalModel || config.model,
-              type: config.type || bot.provider_type,
-              config,
-              stats: {
-                requests: bot.total_requests || 0,
-                tokens: bot.total_tokens || 0,
-                latency: bot.last_latency_ms || 0
-              }
-            };
-          });
-          resolve(bots); // Directly return array
+    const rows = this.db.prepare(`
+      SELECT b.*, s.total_requests, s.total_tokens, s.last_latency_ms, s.last_active as stats_last_active
+      FROM bots b
+      LEFT JOIN bot_stats s ON b.id = s.bot_id
+      ORDER BY b.rowid DESC
+    `).all();
+
+    // Parse config string back to object
+    const bots = rows.map(bot => {
+      const config = bot.config ? JSON.parse(bot.config) : {};
+      // Generate a consistent color based on bot ID if not set
+      let color = bot.color;
+      if (!color) {
+        const colors = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500', 'bg-teal-500', 'bg-pink-500', 'bg-indigo-500'];
+        const index = bot.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length;
+        color = colors[index];
+      }
+      return {
+        id: bot.id,
+        name: bot.name,
+        avatar: bot.avatar,
+        color,
+        status: bot.status,
+        lastActive: bot.stats_last_active || bot.last_active,
+        model: config.originalModel || config.model,
+        type: config.type || bot.provider_type,
+        config,
+        stats: {
+          requests: bot.total_requests || 0,
+          tokens: bot.total_tokens || 0,
+          latency: bot.last_latency_ms || 0
         }
-      });
+      };
     });
+    return bots;
   }
 
   // Get bot by ID
   async getBotById(id) {
-    return new Promise((resolve, reject) => {
-      this.db.get('SELECT * FROM bots WHERE id = ?', [id], (err, row) => {
-        if (err) reject(err);
-        else if (!row) resolve(null);
-        else {
-            const config = row.config ? JSON.parse(row.config) : {};
-            resolve({
-                ...row,
-                config,
-                model: config.originalModel || config.model
-            });
-        }
-      });
-    });
+    const row = this.db.prepare('SELECT * FROM bots WHERE id = ?').get(id);
+    if (!row) return null;
+
+    const config = row.config ? JSON.parse(row.config) : {};
+    return {
+        ...row,
+        config,
+        model: config.originalModel || config.model
+    };
   }
 
   // Delete bot
@@ -166,12 +144,8 @@ export class BotController {
       // Continue with deletion even if One-API cleanup fails
     }
 
-    return new Promise((resolve, reject) => {
-      this.db.run('DELETE FROM bots WHERE id = ?', [id], (err) => {
-        if (err) reject(err);
-        else resolve({ success: true, deleted: id });
-      });
-    });
+    this.db.prepare('DELETE FROM bots WHERE id = ?').run(id);
+    return { success: true, deleted: id };
   }
 
   // Test Bot Connection

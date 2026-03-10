@@ -21,7 +21,7 @@ class EventBus extends EventEmitter {
   async publish(type, source, target, payload, metadata = {}) {
     const id = uuidv4();
     const timestamp = new Date().toISOString();
-    
+
     const event = {
       id,
       type,
@@ -34,29 +34,22 @@ class EventBus extends EventEmitter {
     console.log(`[EventBus] Publishing ${type} from ${source} to ${target}`);
 
     // 1. Persist to DB
-    await new Promise((resolve, reject) => {
-      db.run(
-        `INSERT INTO events (id, type, source, target, payload, metadata, status) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [
-          id,
-          type,
-          source,
-          target,
-          JSON.stringify(payload),
-          JSON.stringify(event.metadata),
-          'pending'
-        ],
-        (err) => {
-          if (err) reject(err);
-          else resolve();
-        }
-      );
-    });
+    db.prepare(
+      `INSERT INTO events (id, type, source, target, payload, metadata, status) VALUES (?, ?, ?, ?, ?, ?, ?)`
+    ).run(
+      id,
+      type,
+      source,
+      target,
+      JSON.stringify(payload),
+      JSON.stringify(event.metadata),
+      'pending'
+    );
 
     // 2. Emit to in-memory listeners
     // We emit the full event object
     this.emit(type, event);
-    
+
     // Also emit a wildcard '*' for global listeners (e.g., logger)
     this.emit('*', event);
 
@@ -67,12 +60,7 @@ class EventBus extends EventEmitter {
    * Mark an event as processed (Optional, for future reliable delivery)
    */
   async markProcessed(eventId) {
-    return new Promise((resolve, reject) => {
-        db.run("UPDATE events SET status = 'processed' WHERE id = ?", [eventId], (err) => {
-            if (err) reject(err);
-            else resolve();
-        });
-    });
+    db.prepare("UPDATE events SET status = 'processed' WHERE id = ?").run(eventId);
   }
 }
 

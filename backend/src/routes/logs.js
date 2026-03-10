@@ -24,12 +24,7 @@ const FastifyPluginCallback = (fastify, options, done) => {
     query += ' ORDER BY timestamp DESC LIMIT 100';
 
     try {
-      const logs = await new Promise((resolve, reject) => {
-        db.all(query, params, (err, rows) => {
-          if (err) reject(err);
-          else resolve(rows);
-        });
-      });
+      const logs = db.prepare(query).all(...params);
 
       // Parse details if it's a JSON string
       const parsedLogs = logs.map(row => {

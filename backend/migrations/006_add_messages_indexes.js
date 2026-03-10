@@ -8,98 +8,26 @@
  * - combined room_id + timestamp queries
  */
 
-import { db } from '../src/db.js';
+export function up(db) {
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_messages_room_id ON messages(room_id);
+    CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);
+    CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages(sender);
+    CREATE INDEX IF NOT EXISTS idx_messages_room_timestamp ON messages(room_id, timestamp DESC);
+  `);
 
-export async function up() {
-  return new Promise((resolve, reject) => {
-    db.serialize(() => {
-      // Index for room_id lookups
-      db.run(`
-        CREATE INDEX IF NOT EXISTS idx_messages_room_id ON messages(room_id)
-      `, (err) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        // Index for timestamp sorting
-        db.run(`
-          CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp)
-        `, (err) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-
-          // Index for sender filtering
-          db.run(`
-            CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages(sender)
-          `, (err) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-
-            // Composite index for room_id + timestamp queries (most common query pattern)
-            db.run(`
-              CREATE INDEX IF NOT EXISTS idx_messages_room_timestamp ON messages(room_id, timestamp DESC)
-            `, (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              console.log('[Migration 006] Successfully created indexes on messages table');
-              resolve();
-            });
-          });
-        });
-      });
-    });
-  });
+  console.log('[Migration 006] Successfully created indexes on messages table');
 }
 
-export async function down() {
-  return new Promise((resolve, reject) => {
-    db.serialize(() => {
-      let completed = 0;
-      const total = 4;
-      const errors = [];
+export function down(db) {
+  db.exec(`
+    DROP INDEX IF EXISTS idx_messages_room_id;
+    DROP INDEX IF EXISTS idx_messages_timestamp;
+    DROP INDEX IF EXISTS idx_messages_sender;
+    DROP INDEX IF EXISTS idx_messages_room_timestamp;
+  `);
 
-      const checkComplete = () => {
-        completed++;
-        if (completed >= total) {
-          if (errors.length > 0) {
-            reject(new Error(errors.join('; ')));
-          } else {
-            console.log('[Migration 006] Successfully dropped indexes from messages table');
-            resolve();
-          }
-        }
-      };
-
-      // Drop indexes
-      db.run(`DROP INDEX IF EXISTS idx_messages_room_id`, (err) => {
-        if (err) errors.push(err.message);
-        checkComplete();
-      });
-
-      db.run(`DROP INDEX IF EXISTS idx_messages_timestamp`, (err) => {
-        if (err) errors.push(err.message);
-        checkComplete();
-      });
-
-      db.run(`DROP INDEX IF EXISTS idx_messages_sender`, (err) => {
-        if (err) errors.push(err.message);
-        checkComplete();
-      });
-
-      db.run(`DROP INDEX IF EXISTS idx_messages_room_timestamp`, (err) => {
-        if (err) errors.push(err.message);
-        checkComplete();
-      });
-    });
-  });
+  console.log('[Migration 006] Successfully dropped indexes from messages table');
 }
 
 export default { up, down };

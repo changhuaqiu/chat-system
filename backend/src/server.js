@@ -76,7 +76,7 @@ const start = async () => {
     await fastify.listen({ port: PORT, host: '0.0.0.0' });
     console.log(`Server listening on http://localhost:${PORT}`);
     loggerService.info('system', `Server started on port ${PORT}`);
-    
+
     // Create Socket.io server
     const io = new Server(fastify.server, {
       cors: { origin: "*", methods: ["GET", "POST"] }
@@ -97,19 +97,18 @@ const start = async () => {
         // Persist to 'messages' table (Frontend History)
         // We use INSERT OR IGNORE or similar logic if ID exists, but sqlite doesn't support IGNORE easily without unique constraint.
         // ID is primary key, so INSERT OR IGNORE works.
-        db.run(
-            'INSERT OR IGNORE INTO messages (id, room_id, sender, content, mentions, message_type, media_url, timestamp, reply_to_id, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [id, roomId, sender, content, JSON.stringify(mentions || []), messageType, mediaUrl, timestamp, replyToId, JSON.stringify(metadata || {})],
-            (err) => {
-                if (err) {
-                    console.error('Error persisting message:', err);
-                    loggerService.error('database', 'Error persisting message', { error: err.message, messageId: id });
-                } else {
-                    // Broadcast to Room
-                    io.to(roomId).emit('messageReceived', payload);
-                }
-            }
-        );
+        try {
+          db.prepare(
+            'INSERT OR IGNORE INTO messages (id, room_id, sender, content, mentions, message_type, media_url, timestamp, reply_to_id, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+          ).run(
+            [id, roomId, sender, content, JSON.stringify(mentions || []), messageType, mediaUrl, timestamp, replyToId, JSON.stringify(metadata || {})]
+          );
+          // Broadcast to Room
+          io.to(roomId).emit('messageReceived', payload);
+        } catch (err) {
+          console.error('Error persisting message:', err);
+          loggerService.error('database', 'Error persisting message', { error: err.message, messageId: id });
+        }
     });
 
     // 2. Typing Indicators - Forward full typing info to clients
@@ -144,13 +143,13 @@ const start = async () => {
       socket.on('stopTyping', ({ room, user }) => {
         socket.to(room).emit('stopTyping', { user });
       });
-      
+
       // Legacy Socket Event - Converted to Event Bus
       socket.on('sendMessage', async (data) => {
         const { room, sender, content, mentions = [], messageType = 'text', mediaUrl = null, replyToId = null, metadata = {} } = data;
         const messageId = Date.now().toString();
         const timestamp = new Date().toISOString();
-        
+
         const payload = {
              id: messageId, roomId: room, sender, content, mentions,
              messageType, mediaUrl, timestamp, replyToId, metadata
@@ -162,14 +161,14 @@ const start = async () => {
         // Publish to Event Bus
         await eventBus.publish('message.created', sourceUrn, targetUrn, payload);
       });
-      
+
       socket.on('disconnect', () => {
         console.log(`Client disconnected: ${socket.id}`);
       });
     });
 
     console.log(`WebSocket server ready on ws://localhost:${PORT}`);
-    
+
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);

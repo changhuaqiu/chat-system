@@ -249,6 +249,36 @@ const apiService = {
     return response.data;
   },
 
+  // 获取仪表盘概览数据
+  getDashboardStats: async () => {
+    const response = await axios.get(`${API_BASE_URL}/api/stats/dashboard`);
+    return response.data;
+  },
+
+  // 获取消息趋势数据
+  getMessageTrend: async (days = 7) => {
+    const response = await axios.get(`${API_BASE_URL}/api/stats/trend`, {
+      params: { days }
+    });
+    return response.data;
+  },
+
+  // 获取 Agent 性能排行
+  getAgentPerformance: async (limit = 10) => {
+    const response = await axios.get(`${API_BASE_URL}/api/stats/agents/performance`, {
+      params: { limit }
+    });
+    return response.data;
+  },
+
+  // 获取 API 使用统计
+  getApiUsage: async (days = 7) => {
+    const response = await axios.get(`${API_BASE_URL}/api/stats/api-usage`, {
+      params: { days }
+    });
+    return response.data;
+  },
+
   // 获取表情列表
   getEmojis: async () => {
     const response = await axios.get(`${API_BASE_URL}/api/emoji`);
