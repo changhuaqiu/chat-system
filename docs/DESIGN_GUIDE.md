@@ -1,8 +1,10 @@
 # 设计指引 (Design Guide)
 
-> 🎨 **当前设计版本**: Apple Style (苹果风格)
-> 📅 **最后更新**: 2026-03-07
-> ✅ **状态**: 已确定，准备开发
+> 🎮 **当前设计版本**: Pixel Style (像素风格 - 8-bit 复古游戏机风格)
+> 📅 **最后更新**: 2026-03-10
+> ✅ **状态**: 已完成改造
+
+> ⚠️ **重要变更**: 2026-03-10 已从 Apple Style 改造为 Pixel Style，详见 [UI_CHANGELOG.md](./UI_CHANGELOG.md)
 
 ---
 
@@ -131,32 +133,49 @@
 
 ---
 
-## 🎨 设计规范
+## 🎨 设计规范 (Pixel Style)
 
-### 颜色系统
-- 主色: `#007aff` (苹果蓝)
-- 成功: `#34c759` (苹果绿)
-- 警告: `#ff9f0a` (苹果橙)
-- 错误: `#ff3b30` (苹果红)
-- 背景: `#f5f5f7` (苹果灰)
-- 卡片: `#ffffff` (纯白)
+### 颜色系统 (8-bit 调色板)
 
-### 圆角规范
-- 卡片: 18px
-- 按钮: 12px
-- 输入框: 12px
-- 图标: 14px
+**基础色**
+- 黑色: `#000000`
+- 深色: `#1a1a2e`
+- 灰色: `#6b7280`
+- 白色: `#ffffff`
 
-### 阴影规范
-- 普通: `0 2px 8px rgba(0,0,0,0.04)`
-- 悬停: `0 4px 20px rgba(0,0,0,0.08)`
+**强调色**
+- 主色 (靛蓝): `#6366f1`
+- 青色: `#00f3ff`
+- 绿色: `#00ff88`
+- 粉色: `#f43f5e`
+- 橙色: `#f97316`
+- 紫色: `#bc13fe`
 
-### 字体规范
-- 主要: `-apple-system, BlinkMacSystemFont, Inter`
-- 标题: 18px - 32px, semibold
-- 正文: 14px - 16px, regular
-- 小字: 12px - 13px, regular
-- 代码/日志: `SF Mono`, Monaco, `Cascadia Code`
+**背景层次**
+- 主背景: `#0f0f23`
+- 次背景: `#1a1a2e`
+- 卡片背景: `#12121f`
+
+### 边框规范 (硬边框)
+- 所有元素: `border-4` (4px 实线边框)
+- 无圆角，或使用 `2px` 小圆角
+- 边框色: `#374151` (默认) / `#4b5563` (高亮)
+
+### 阴影规范 (硬边偏移)
+- 小阴影: `2px 2px 0 var(--pixel-border)`
+- 中阴影: `4px 4px 0 var(--pixel-border)`
+- 大阴影: `6px 6px 0 var(--pixel-border)`
+- 超大阴影: `8px 8px 0 var(--pixel-border)`
+
+### 字体规范 (像素字体)
+- 标题: `'Press Start 2P'`, monospace
+- 正文: `'VT323'`, monospace
+- 基础字号放大 1.5-2 倍保证可读性
+
+### 动画规范 (像素风格)
+- 像素闪烁: `pixel-flicker`
+- 像素抖动: `pixel-shake`
+- 按钮按下: 向右下偏移 2px
 
 ---
 
@@ -181,20 +200,36 @@
 
 ## ⚠️ 注意事项
 
-### ❌ 不要使用的文件
-- `admin_dashboard_multi_agent.html` (v1, 颜色太鲜艳)
-- `admin_dashboard_multi_agent_v2.html` (v2, 已过时)
-- `admin_dashboard_apple_style.html` (v3, 有对齐问题)
-- `api_key_management.html` (旧版，风格不统一)
-- `robot_management.html` (旧版，风格不统一)
+### 🎮 像素风格开发规范
 
-### ✅ 请使用的文件
-- `dashboard_global_overview.html` (仪表盘)
-- `robot_management_apple.html` (Agent管理)
-- `api_key_management_apple.html` (API Key)
-- `logs_management_apple.html` (日志)
-- `analytics_dashboard.html` (数据分析)
-- `chat_interface_enhanced.html` (聊天室)
+1. **不要使用圆角** - 所有元素使用直角或 4px 硬边框
+2. **不要使用渐变** - 使用纯色或像素图案背景
+3. **不要使用模糊效果** - 移除 `backdrop-filter: blur()`
+4. **不要使用发光阴影** - 使用硬边偏移阴影 `4px 4px 0`
+5. **使用像素字体** - 标题用 `font-pixel-title`，正文用 `font-pixel-body`
+
+### 样式类名参考
+
+```css
+/* 像素边框 */
+border-4 border-border
+
+/* 像素阴影 */
+shadow-pixel-sm  /* 2px 2px 0 */
+shadow-pixel-md  /* 4px 4px 0 */
+shadow-pixel-lg  /* 6px 6px 0 */
+
+/* 像素颜色 */
+bg-bg-card          /* 卡片背景 */
+bg-bg-secondary     /* 次背景 */
+border-pixel-primary    /* 主色边框 */
+text-pixel-accent-cyan  /* 青色文字 */
+```
+
+### 📁 相关文档
+
+- [UI_CHANGELOG.md](./UI_CHANGELOG.md) - UI 变更历史记录
+- [../frontend/src/styles/pixel_theme.css](../frontend/src/styles/pixel_theme.css) - 像素主题样式
 
 ---
 
@@ -203,6 +238,6 @@
 如有设计问题，请联系 **UX Designer**
 
 ---
-**最后更新**: 2026-03-07
-**新增**: API Key管理、Agent管理、日志管理页面
-**统一**: 所有页面已统一为Apple Style
+**最后更新**: 2026-03-10
+**重大变更**: 从 Apple Style 改造为 Pixel Style (8-bit 复古游戏机风格)
+**详细记录**: 见 [UI_CHANGELOG.md](./UI_CHANGELOG.md)
